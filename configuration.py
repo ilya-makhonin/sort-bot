@@ -4,3 +4,10 @@ data_base_config = {
     'password': '123456',
     'db': 'it_root_articles'
 }
+
+user_state = {
+    'starting': 'starting',
+    'theme': 'theme',
+    'level': 'level',
+    'author': 'author',
+}
