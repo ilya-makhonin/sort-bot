@@ -1,10 +1,10 @@
 import pymysql
+from configuration import data_base_config as db
 
 
 def get_connection():
     connection = pymysql.connections.Connection(
-        host='localhost', user='root', password='123456',
-        db='it_root_articles', charset='utf8mb4'
+        host=db['host'], user=db['user'], password=db['password'], db=db['db'], charset='utf8mb4'
     )
     return connection
 
