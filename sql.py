@@ -9,14 +9,27 @@ def get_connection():
     return connection
 
 
+def add_user(user_id, username, name):
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO `users` (user_id, username, name) VALUES (%s, %s, %s);"
+            cursor.execute(sql, (user_id, username, name))
+            connection.commit()
+    finally:
+        connection.close()
+
+
 def get_author():
     connection = get_connection()
-    with connection.cursor() as cursor:
-        sql = "SELECT * FROM `users`;"
-        cursor.execute(sql)
-        result = cursor.fetchone()
-        print(result)
-    connection.close()
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `author`;"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            return result
+    finally:
+        connection.close()
 
 
 def get_articles(condition):
