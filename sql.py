@@ -1,39 +1,63 @@
 import pymysql
-from configuration import data_base_config as db
 
 
-def get_connection():
-    connection = pymysql.connections.Connection(
-        host=db['host'], user=db['user'], password=db['password'], db=db['db'], charset='utf8mb4'
-    )
-    return connection
+class SqlMethods:
+    def __init__(self):
+        self.host = 'localhost'
+        self.user = 'root'
+        self.password = '123456'
+        self.db = 'it_root_articles'
+
+    def get_connection(self):
+        connection = pymysql.connections.Connection(
+            host=self.host, user=self.user, password=self.password, db=self.db, charset='utf8mb4')
+        return connection
+
+    def add_user(self, user_id, username, name):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                sql = "INSERT INTO `users` (user_id, username, name) VALUES (%s, %s, %s);"
+                cursor.execute(sql, (user_id, username, name))
+                connection.commit()
+        finally:
+            connection.close()
+
+    def change_state(self, new_state, user_id):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                sql = "UPDATE users SET state = %s WHERE user_id = %s;"
+                cursor.execute(sql, (new_state, user_id))
+                connection.commit()
+        finally:
+            connection.close()
+
+    def get_user_state(self, user_id):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT state FROM users WHERE user_id = %s;"
+                cursor.execute(sql, (user_id,))
+                return cursor.fetchone()
+        finally:
+            connection.close()
+
+    def get_info_by_choice(self, type_table):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM {};".format(type_table)
+                cursor.execute(sql)
+                return cursor.fetchall()
+        finally:
+            connection.close()
+
+    def get_articles(self, condition):
+        pass
 
 
-def add_user(user_id, username, name):
-    connection = get_connection()
-    try:
-        with connection.cursor() as cursor:
-            sql = "INSERT INTO `users` (user_id, username, name) VALUES (%s, %s, %s);"
-            cursor.execute(sql, (user_id, username, name))
-            connection.commit()
-    finally:
-        connection.close()
-
-
-def get_author():
-    connection = get_connection()
-    try:
-        with connection.cursor() as cursor:
-            sql = "SELECT * FROM `author`;"
-            cursor.execute(sql)
-            result = cursor.fetchall()
-            return result
-    finally:
-        connection.close()
-
-
-def get_articles(condition):
-    pass
+sql_method = SqlMethods()
 
 
 # *****************************************************************************************************
@@ -49,7 +73,10 @@ def inserting(table, data_array):
     :keyword table='articles' => data_array like [{name: <str>, url: <str>, theme: <int>, level: <int>, author: <int>}]
     '''
 
-    connection = get_connection()
+    connection = pymysql.connections.Connection(
+        host='localhost', user='root', password='123456', db='it_root_articles', charset='utf8mb4'
+    )
+
     try:
         with connection.cursor() as cur:
             if table == 'users':
