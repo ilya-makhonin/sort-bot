@@ -17,8 +17,10 @@ class SqlMethods:
         connection = self.get_connection()
         try:
             with connection.cursor() as cursor:
-                sql = "INSERT INTO `users` (user_id, username, name) VALUES (%s, %s, %s);"
-                cursor.execute(sql, (user_id, username, name))
+                cursor.execute('SELECT * FROM users WHERE user_id = %s', (user_id,))
+                if cursor.fetchone() is None:
+                    cursor.execute('INSERT INTO `users` (user_id, username, name) VALUES (%s, %s, %s);',
+                                   (user_id, username, name))
                 connection.commit()
         finally:
             connection.close()
