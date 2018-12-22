@@ -21,6 +21,10 @@ def pre_modified_button(buttons, level=False):
     return get_markup(result)
 
 
+def back_to_main_menu(message: telebot.types.Message):
+    bot.send_message(message.from_user.id, start_message, reply_markup=get_markup(main_menu))
+
+
 @bot.message_handler(commands=['start'])
 def start_handler(message: telebot.types.Message):
     name = message.from_user.first_name
@@ -37,10 +41,18 @@ def author_handler(message: telebot.types.Message):
         message.from_user.id, author_mes,
         reply_markup=pre_modified_button(db.get_info_by_choice('author'), first_level_back)
     )
+    bot.register_next_step_handler_by_chat_id(message.from_user.id, author_list_articles)
 
 
 def author_list_articles(message: telebot.types.Message):
-    pass
+    second_level = second_level_back.format('авторов')
+    if message.text == first_level_back:
+        back_to_main_menu(message)
+    elif message.text == second_level:
+        author_handler(message)
+    else:
+        bot.send_message(message.from_user.id, second_level, reply_markup=pre_modified_button([], second_level))
+        bot.register_next_step_handler_by_chat_id(message.from_user.id, author_list_articles)
 
 
 @bot.message_handler(regexp='По темам')
@@ -59,11 +71,6 @@ def level_handler(message: telebot.types.Message):
 @bot.message_handler(regexp='Я сам выберу')
 def all_articles_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, all_mes, reply_markup=get_markup(main_menu))
-
-
-@bot.message_handler(regexp=first_level_back)
-def all_articles_handler(message: telebot.types.Message):
-    bot.send_message(message.from_user.id, start_message, reply_markup=get_markup(main_menu))
 
 
 if __name__ == '__main__':
