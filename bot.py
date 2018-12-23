@@ -4,6 +4,17 @@ from configuration import *
 
 
 bot = telebot.TeleBot('token')
+cash = {
+    'author': list(),
+    'theme': list(),
+    'level': list()
+}
+
+
+def get_db_information():
+    cash['author'] = db.get_info_by_choice('author')
+    cash['theme'] = db.get_info_by_choice('theme')
+    cash['level'] = db.get_info_by_choice('level')
 
 
 def get_markup(buttons, rows=1):
@@ -37,6 +48,10 @@ def back_to_main_menu(message: telebot.types.Message):
 #         bot.register_next_step_handler_by_chat_id(message.from_user.id, author_list_articles)
 
 
+def get_articles():
+    pass
+
+
 @bot.message_handler(commands=['start'])
 def start_handler(message: telebot.types.Message):
     name = message.from_user.first_name
@@ -63,7 +78,9 @@ def author_list_articles(message: telebot.types.Message):
     elif message.text == second_level:
         author_handler(message)
     else:
-        bot.send_message(message.from_user.id, second_level, reply_markup=pre_modified_button([], second_level))
+        bot.send_message(
+            message.from_user.id, second_level,
+            reply_markup=pre_modified_button([], second_level))
         bot.register_next_step_handler_by_chat_id(message.from_user.id, author_list_articles)
 
 
@@ -73,6 +90,7 @@ def theme_handler(message: telebot.types.Message):
         message.from_user.id, theme_mes,
         reply_markup=pre_modified_button(db.get_info_by_choice('theme'), first_level_back)
     )
+    bot.register_next_step_handler_by_chat_id(message.from_user.id, theme_list_articles)
 
 
 def theme_list_articles(message: telebot.types.Message):
@@ -82,13 +100,18 @@ def theme_list_articles(message: telebot.types.Message):
     elif message.text == second_level:
         theme_handler(message)
     else:
-        bot.send_message(message.from_user.id, second_level, reply_markup=pre_modified_button([], second_level))
+        bot.send_message(
+            message.from_user.id, second_level,
+            reply_markup=pre_modified_button([], second_level))
         bot.register_next_step_handler_by_chat_id(message.from_user.id, theme_list_articles)
 
 
 @bot.message_handler(regexp='По уровню')
 def level_handler(message: telebot.types.Message):
-    bot.send_message(message.from_user.id, level_mes, reply_markup=get_markup(main_menu))
+    bot.send_message(
+        message.from_user.id, level_mes,
+        reply_markup=get_markup(main_menu))
+    bot.register_next_step_handler_by_chat_id(message.from_user.id, level_list_articles)
 
 
 def level_list_articles(message: telebot.types.Message):
@@ -105,6 +128,7 @@ def level_list_articles(message: telebot.types.Message):
 @bot.message_handler(regexp='Я сам выберу')
 def all_articles_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, all_mes, reply_markup=get_markup(main_menu))
+    bot.register_next_step_handler_by_chat_id(message.from_user.id, all_list_articles)
 
 
 def all_list_articles(message: telebot.types.Message):
