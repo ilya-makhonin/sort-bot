@@ -1,9 +1,10 @@
 import telebot
 from sql import sql_method as db
 from configuration import *
+import token_for_bot as tfb
 
 
-bot = telebot.TeleBot('token')
+bot = telebot.TeleBot(tfb.token)
 cash = {
     'author': list(),
     'theme': list(),
