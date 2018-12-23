@@ -15,14 +15,26 @@ def get_markup(buttons, rows=1):
 def pre_modified_button(buttons, level=False):
     result = []
     for button in buttons:
-        result.append(button[-1].capitalize())
+        result.append(button[-1])
     if level is not False:
         result.append(level)
     return get_markup(result)
 
 
 def back_to_main_menu(message: telebot.types.Message):
+    bot.send_message(message.from_user.id, 'Go back, bro!', reply_markup=telebot.types.ReplyKeyboardRemove())
     bot.send_message(message.from_user.id, start_message, reply_markup=get_markup(main_menu))
+
+
+# def actions_handler(message):
+#     second_level = second_level_back.format('авторов')
+#     if message.text == first_level_back:
+#         back_to_main_menu(message)
+#     elif message.text == second_level:
+#         author_handler(message)
+#     else:
+#         bot.send_message(message.from_user.id, second_level, reply_markup=pre_modified_button([], second_level))
+#         bot.register_next_step_handler_by_chat_id(message.from_user.id, author_list_articles)
 
 
 @bot.message_handler(commands=['start'])
@@ -63,14 +75,46 @@ def theme_handler(message: telebot.types.Message):
     )
 
 
+def theme_list_articles(message: telebot.types.Message):
+    second_level = second_level_back.format('тем')
+    if message.text == first_level_back:
+        back_to_main_menu(message)
+    elif message.text == second_level:
+        theme_handler(message)
+    else:
+        bot.send_message(message.from_user.id, second_level, reply_markup=pre_modified_button([], second_level))
+        bot.register_next_step_handler_by_chat_id(message.from_user.id, theme_list_articles)
+
+
 @bot.message_handler(regexp='По уровню')
 def level_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, level_mes, reply_markup=get_markup(main_menu))
 
 
+def level_list_articles(message: telebot.types.Message):
+    second_level = second_level_back.format('уровней')
+    if message.text == first_level_back:
+        back_to_main_menu(message)
+    elif message.text == second_level:
+        level_handler(message)
+    else:
+        bot.send_message(message.from_user.id, second_level, reply_markup=pre_modified_button([], second_level))
+        bot.register_next_step_handler_by_chat_id(message.from_user.id, level_list_articles)
+
+
 @bot.message_handler(regexp='Я сам выберу')
 def all_articles_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, all_mes, reply_markup=get_markup(main_menu))
+
+
+def all_list_articles(message: telebot.types.Message):
+    if message.text == first_level_back:
+        back_to_main_menu(message)
+    else:
+        bot.send_message(
+            message.from_user.id, first_level_back,
+            reply_markup=pre_modified_button([], first_level_back))
+        bot.register_next_step_handler_by_chat_id(message.from_user.id, all_list_articles)
 
 
 if __name__ == '__main__':
