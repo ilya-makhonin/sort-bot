@@ -111,7 +111,8 @@ def theme_list_articles(message: telebot.types.Message):
 def level_handler(message: telebot.types.Message):
     bot.send_message(
         message.from_user.id, hello_level_mes,
-        reply_markup=get_markup(main_menu))
+        reply_markup=pre_modified_button(db.get_info_by_choice('level'), first_level_back)
+    )
     bot.register_next_step_handler_by_chat_id(message.from_user.id, level_list_articles)
 
 
