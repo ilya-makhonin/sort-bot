@@ -56,7 +56,22 @@ class SqlMethods:
             connection.close()
 
     def get_articles(self, condition):
-        pass
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                result = None
+                if condition == 'author':
+                    cursor.execute('')
+                elif condition == 'theme':
+                    cursor.execute('')
+                elif condition == 'level':
+                    cursor.execute('')
+                elif condition == 'all':
+                    cursor.execute('SELECT * FROM articles;')
+                    result = cursor.fetchall()
+                return result
+        finally:
+            connection.close()
 
 
 sql_method = SqlMethods()
