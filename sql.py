@@ -55,21 +55,38 @@ class SqlMethods:
         finally:
             connection.close()
 
-    def get_articles(self, condition):
+    def get_articles(self, condition, flag=''):
         connection = self.get_connection()
         try:
             with connection.cursor() as cursor:
                 result = None
                 if condition == 'author':
-                    cursor.execute('')
+                    cursor.execute('SELECT articles.`name` FROM author_article '
+                                   'JOIN author ON author_article.author_id = author.`id` '
+                                   'JOIN articles ON author_article.article_id = articles.`id` '
+                                   'WHERE author.`id` = (SELECT `id` FROM author WHERE `name` = %s);', (flag,))
+                    result = cursor.fetchall()
                 elif condition == 'theme':
-                    cursor.execute('')
-                elif condition == 'level':
-                    cursor.execute('')
+                    cursor.execute('SELECT articles.`name` FROM theme_article '
+                                   'JOIN theme ON theme_article.theme_id = theme.`id` '
+                                   'JOIN articles ON theme_article.article_id = articles.`id` '
+                                   'WHERE theme.`id` = (SELECT `id` FROM theme WHERE theme_name = %s);', (flag,))
+                    result = cursor.fetchall()
+                # elif condition == 'level':
+                #     cursor.execute('')
                 elif condition == 'all':
-                    cursor.execute('SELECT * FROM articles;')
+                    cursor.execute('SELECT `name` FROM articles;')
                     result = cursor.fetchall()
                 return result
+        finally:
+            connection.close()
+
+    def get_article(self, name):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT `name`, `url` FROM articles WHERE `name` = %s;', (name,))
+                return cursor.fetchone()
         finally:
             connection.close()
 
