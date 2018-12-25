@@ -9,21 +9,21 @@ hello_level_mes = 'Мы постарались разбить все наши с
 hello_all_mes = 'Вот все статьи с канала IT Root. Выбирай и читай что хочешь!'
 
 
-author_mes = ''
-theme_mes = ''
+author_mes = 'Ты выбрал статьи {}'
+theme_mes = 'Статьи по теме {}'
 level_mes = ''
-all_mes = ''
 
+first_level_back = 'Назад в меню'
+back_to_author = 'Назад к списку авторов'
+back_to_theme = 'Назад к списку тем'
+back_to_level = 'Назад к списку уровней'
 
 main_menu = [
     'По авторам',
     'По темам',
-    'По уровню',
+    # 'По уровню',
     'Я сам выберу! Покажите все статьи'
 ]
-
-first_level_back = 'Назад в меню'
-second_level_back = 'Назад к списку {}'
 
 user_state = {
     'starting': 'starting',
