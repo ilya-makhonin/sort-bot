@@ -1,30 +1,43 @@
-from flask import Flask, request
+import logging
+import time
 import telebot
 from bot import bot
-import os
+import flask
+from config import *
+
+
+def create_server():
+    logger = telebot.logger
+    telebot.logger.setLevel(logging.INFO)
+    app = flask.Flask(__name__)
+
+    @app.route('/', methods=['GET', 'HEAD'])
+    def index():
+        return ''
+
+    @app.route(WEBHOOK_URL_PATH, methods=['POST'])
+    def webhook():
+        if flask.request.headers.get('content-type') == 'application/json':
+            json_string = flask.request.get_data().decode('utf-8')
+            update = telebot.types.Update.de_json(json_string)
+            bot.process_new_updates([update])
+            return ''
+        else:
+            flask.abort(403)
+    return app
 
 
 def start_server():
-    server = Flask(__name__)
-
-    @server.route("/bot", methods=['POST'])
-    def get_message():
-        bot.process_new_updates(
-            [telebot.types.Update.de_json(
-                request.stream.read().decode("utf-8")
-            )]
-        )
-        return "!", 200
-
-    @server.route("/")
-    def webhook():
-        bot.remove_webhook()
-        bot.set_webhook(url="https://fake-gena-bot.herokuapp.com/bot")
-        return "?", 200
-
-    server.run(host="0.0.0.0", port=os.environ.get('PORT', 80))
+    app = create_server()
+    bot.remove_webhook()
+    time.sleep(0.1)
+    bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
+                    certificate=open(WEBHOOK_SSL_CERT, 'r'))
+    app.run(host=WEBHOOK_LISTEN,
+            port=WEBHOOK_PORT,
+            ssl_context=(WEBHOOK_SSL_CERT, WEBHOOK_SSL_PRIV),
+            debug=True)
 
 
 if __name__ == '__main__':
-    pass
-    # start_server()
+    start_server()
