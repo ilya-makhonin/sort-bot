@@ -29,19 +29,17 @@ class SqlMethods:
         connection = self.get_connection()
         try:
             with connection.cursor() as cursor:
-                sql = "UPDATE users SET state = %s WHERE user_id = %s;"
-                cursor.execute(sql, (new_state, user_id))
+                cursor.execute('UPDATE users SET state = %s WHERE user_id = %s;', (new_state, user_id))
                 connection.commit()
         finally:
             connection.close()
 
-    def get_user_state(self, user_id):
+    def get_state(self, user_id):
         connection = self.get_connection()
         try:
             with connection.cursor() as cursor:
-                sql = "SELECT state FROM users WHERE user_id = %s;"
-                cursor.execute(sql, (user_id,))
-                return cursor.fetchone()
+                cursor.execute('SELECT `state` FROM users WHERE user_id = %s;', (user_id,))
+                return (cursor.fetchone())[0]
         finally:
             connection.close()
 
@@ -72,8 +70,6 @@ class SqlMethods:
                                    'JOIN articles ON theme_article.article_id = articles.`id` '
                                    'WHERE theme.`id` = (SELECT `id` FROM theme WHERE theme_name = %s);', (flag,))
                     result = cursor.fetchall()
-                # elif condition == 'level':
-                #     cursor.execute('')
                 elif condition == 'all':
                     cursor.execute('SELECT `name` FROM articles;')
                     result = cursor.fetchall()
