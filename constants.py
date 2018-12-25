@@ -11,11 +11,13 @@ hello_all_mes = 'Вот все статьи с канала IT Root. Выбир�
 
 author_mes = 'Ты выбрал статьи {}'
 theme_mes = 'Статьи по теме {}'
-level_mes = ''
+
+level_mes = 'Ты выбрал {}'
 
 first_level_back = 'Назад в меню'
 back_to_author = 'Назад к списку авторов'
 back_to_theme = 'Назад к списку тем'
+
 back_to_level = 'Назад к списку уровней'
 
 main_menu = [
@@ -25,9 +27,9 @@ main_menu = [
     'Я сам выберу! Покажите все статьи'
 ]
 
-user_state = {
-    'starting': 'starting',
-    'theme': 'theme',
-    'level': 'level',
-    'author': 'author',
-}
+# user_state = {
+#     'starting': 'starting',
+#     'theme': 'theme',
+#     'level': 'level',
+#     'author': 'author',
+# }
