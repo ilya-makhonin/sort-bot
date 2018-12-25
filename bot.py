@@ -1,10 +1,10 @@
 import telebot
 from sql import sql_method as db
 from configuration import *
-import token_for_bot as tfb
+import config
 
 
-bot = telebot.TeleBot(tfb.token)
+bot = telebot.TeleBot(config.token)
 
 # Cash for speed (don't realize)
 cash = {
