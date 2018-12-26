@@ -13,14 +13,20 @@ def get_markup(buttons, rows=1):
     return markup
 
 
-def pre_modified_button(buttons, level=False):
+def pre_modified_button(buttons, level=False, page=1):
     result = []
     if level is not False:
         result.append(level)
     for button in buttons:
         result.append(button[-1])
-    if len(result) > 50:
-        result = result[0:50]
+    if len(result) > 20:
+        pass
+        # if page > 1:
+        #     result = result[page * 10: (page * 10) + 20]
+        #     result.append('Вернуться назад')
+        # else:
+        #     result = result[0:20]
+        # result.append('Смотреть дальше')
     return get_markup(result)
 
 
@@ -128,11 +134,11 @@ def all_articles_handler(message: telebot.types.Message):
 def all_list_articles(message: telebot.types.Message):
     article = db.get_article(message.text)
     bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
-    bot.register_next_step_handler_by_chat_id(message.from_user.id, all_list_articles)
 
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)
+
 
 """
 @bot.message_handler(regexp='По уровню')
