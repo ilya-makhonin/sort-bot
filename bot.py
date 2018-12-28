@@ -2,6 +2,8 @@ import telebot
 from sql import sql_method as db
 from constants import *
 import config
+import multiprocessing
+import time
 
 
 bot = telebot.TeleBot(config.token)
@@ -42,6 +44,14 @@ def start_handler(message: telebot.types.Message):
         text=start_message,
         parse_mode='markdown',
         reply_markup=get_markup(main_menu))
+
+
+@bot.message_handler(commands=['downloadarticles'])
+def download_articles(message: telebot.types.Message):
+    admins_list = [i[1] for i in db.get_info_by_choice('author')]
+    if message.from_user.id in admins_list:
+        pass
+        # авторы|темы|название|ссылка|
 
 
 @bot.message_handler(regexp=first_level_back)
@@ -136,33 +146,51 @@ def all_list_articles(message: telebot.types.Message):
     bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
 
 
+def args_check(args_names, checking_kwargs):
+    """
+    :param args_names: <list> names of variables
+    :param checking_kwargs: <map/kwargs> map with variables names and variables by itself
+    :return: True if all vars in kwargs, False else
+    """
+    for arg in args_names:
+        if checking_kwargs.get(arg) is None:
+            return False
+    return True
+
+
+def bot_start(use_webhook=False, webhook_data=dict):
+    def set_webhook(url, cert):
+        try:
+            telebot.apihelper.set_webhook(config.token, url=url, certificate=cert)
+        except Exception as err:
+            print(err.with_traceback(None))
+
+    def webhook_isolated_run(url, cert):
+        multiprocessing.Process(target=set_webhook, args=(url, cert), daemon=True).start()
+
+    global bot, states
+
+    # telebot.logger.setLevel(logging.DEBUG)
+    # telebot.logger.addHandler(log.__file_handler('logs.log', log.__get_formater()))
+
+    if not use_webhook:
+        bot.remove_webhook()
+        bot.polling(none_stop=True)
+
+    elif args_check(['webhook_ip', 'webhook_port', 'token', 'ssl_cert'], webhook_data):
+        bot.remove_webhook()
+        time.sleep(1)
+
+        webhook_isolated_run(url='https://%s:%s/%s/' % (webhook_data.get('webhook_ip'),
+                                                        webhook_data.get('webhook_port'),
+                                                        webhook_data.get('token')),
+                             cert=open(webhook_data.get('ssl_cert'), 'r'))
+        return bot
+    else:
+        raise Exception('Params for start with webhook is not specified')
+
+    return bot
+
+
 if __name__ == '__main__':
     bot.polling(none_stop=True)
-
-
-"""
-@bot.message_handler(regexp='По уровню')
-def level_handler(message: telebot.types.Message):
-    bot.send_message(
-        message.from_user.id,
-        hello_level_mes,
-        parse_mode='markdown',
-        reply_markup=pre_modified_button(db.get_info_by_choice('level'), first_level_back)
-    )
-    bot.register_next_step_handler_by_chat_id(message.from_user.id, level_list_articles)
-
-
-def level_list_articles(message: telebot.types.Message):
-    second_level = second_level_back.format('уровней')
-    if message.text == first_level_back:
-        back_to_main_menu(message)
-    elif message.text == second_level:
-        level_handler(message)
-    else:
-        bot.send_message(
-            message.from_user.id,
-            second_level,
-            parse_mode='markdown',
-            reply_markup=pre_modified_button([], second_level))
-        bot.register_next_step_handler_by_chat_id(message.from_user.id, level_list_articles)
-"""
