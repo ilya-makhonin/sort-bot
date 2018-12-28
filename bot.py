@@ -4,6 +4,8 @@ from constants import *
 import config
 import multiprocessing
 import time
+import log
+import logging
 
 
 bot = telebot.TeleBot(config.token)
@@ -15,7 +17,7 @@ def get_markup(buttons, rows=1):
     return markup
 
 
-def pre_modified_button(buttons, level=False, page=1):
+def pre_modified_button(buttons, level=False):
     result = []
     if level is not False:
         result.append(level)
@@ -23,12 +25,6 @@ def pre_modified_button(buttons, level=False, page=1):
         result.append(button[-1])
     if len(result) > 20:
         pass
-        # if page > 1:
-        #     result = result[page * 10: (page * 10) + 20]
-        #     result.append('Вернуться назад')
-        # else:
-        #     result = result[0:20]
-        # result.append('Смотреть дальше')
     return get_markup(result)
 
 
@@ -146,19 +142,7 @@ def all_list_articles(message: telebot.types.Message):
     bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
 
 
-def args_check(args_names, checking_kwargs):
-    """
-    :param args_names: <list> names of variables
-    :param checking_kwargs: <map/kwargs> map with variables names and variables by itself
-    :return: True if all vars in kwargs, False else
-    """
-    for arg in args_names:
-        if checking_kwargs.get(arg) is None:
-            return False
-    return True
-
-
-def bot_start(use_webhook=False, webhook_data=dict):
+def bot_start(webhook_data, use_webhook=False):
     def set_webhook(url, cert):
         try:
             telebot.apihelper.set_webhook(config.token, url=url, certificate=cert)
@@ -168,29 +152,34 @@ def bot_start(use_webhook=False, webhook_data=dict):
     def webhook_isolated_run(url, cert):
         multiprocessing.Process(target=set_webhook, args=(url, cert), daemon=True).start()
 
-    global bot, states
+    def args_check(args_names, checking_kwargs):
+        for arg in args_names:
+            if checking_kwargs.get(arg) is None:
+                return False
+        return True
 
-    # telebot.logger.setLevel(logging.DEBUG)
-    # telebot.logger.addHandler(log.__file_handler('logs.log', log.__get_formater()))
+    # global bot, states
+
+    telebot.logger.setLevel(logging.DEBUG)
+    telebot.logger.addHandler(log.__file_handler('logs.log', log.__get_formater()))
 
     if not use_webhook:
         bot.remove_webhook()
         bot.polling(none_stop=True)
-
     elif args_check(['webhook_ip', 'webhook_port', 'token', 'ssl_cert'], webhook_data):
         bot.remove_webhook()
         time.sleep(1)
-
-        webhook_isolated_run(url='https://%s:%s/%s/' % (webhook_data.get('webhook_ip'),
-                                                        webhook_data.get('webhook_port'),
-                                                        webhook_data.get('token')),
-                             cert=open(webhook_data.get('ssl_cert'), 'r'))
+        webhook_isolated_run(
+            url='https://%s:%s/%s/' % (
+                webhook_data.get('webhook_ip'),
+                webhook_data.get('webhook_port'),
+                webhook_data.get('token')),
+            cert=open(webhook_data.get('ssl_cert'), 'r'))
         return bot
     else:
         raise Exception('Params for start with webhook is not specified')
-
     return bot
 
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    bot_start({})
