@@ -42,12 +42,29 @@ def start_handler(message: telebot.types.Message):
         reply_markup=get_markup(main_menu))
 
 
-@bot.message_handler(commands=['downloadarticles'])
+@bot.message_handler(commands=['downloadarticles'])   # Testing
 def download_articles(message: telebot.types.Message):
     admins_list = [i[1] for i in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
-        pass
-        # авторы|темы|название|ссылка|
+        article = message.text[18:].split('|')
+        if len(article) < 4:
+            bot.send_message(message.from_user.id, download_incorrect, parse_mode='HTML')
+        else:
+            authors = [(author.replace('#', '')).strip() for author in article[0].split(' ')]
+            themes = [(theme.replace('#', '')).strip() for theme in article[1].split(' ')]
+            author_correct = db.check_author(authors)
+            theme_correct = db.check_theme(themes)
+            download_error = 'Отчёт:\n\n'
+            if not author_correct or not theme_correct:
+                if not author_correct:
+                    download_error += author_error + '\n'
+                if not theme_correct:
+                    download_error += theme_error
+                bot.send_message(message.from_user.id, download_error)
+            else:
+                article_id = db.add_article(article[2].strip(), article[3].strip())
+                db.add_relation_to_article(author_correct, theme_correct, article_id)
+                bot.send_message(message.from_user.id, download_success)
 
 
 @bot.message_handler(regexp=first_level_back)
