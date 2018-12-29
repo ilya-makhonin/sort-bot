@@ -1,7 +1,7 @@
 import telebot
 from bot import bot
 import flask
-# from config import *
+from config import *
 import log
 
 
@@ -15,7 +15,7 @@ def flask_init(bot_object):
     def index():
         return ''
 
-    @webhook_app.route('token', methods=['POST'])
+    @webhook_app.route(WEBHOOK_URL_PATH, methods=['POST'])
     def webhook():
         if flask.request.headers.get('content-type') == 'application/json':
             json_string = flask.request.get_data().decode('utf-8')
@@ -44,9 +44,9 @@ def start(use_webhook=False, **webhook_data):
 if __name__ == '__main__':
     app = start(
         use_webhook=True,
-        webhook_ip='194.32.77.67',
-        webhook_port='webhook_port',
-        token='token',
+        webhook_ip=WEBHOOK_HOST,
+        webhook_port=WEBHOOK_PORT,
+        token=token,
         ssl_cert='ssl_cert'
     )
 
