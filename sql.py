@@ -86,5 +86,70 @@ class SqlMethods:
         finally:
             connection.close()
 
+    def add_article(self, name, link):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('INSERT INTO articles (`name`, `url`) VALUES (%s, %s);', (name, link))
+                connection.commit()
+                cursor.execute('SELECT `id` FROM articles ORDER BY `id` DESC LIMIT 1;')
+                return cursor.fetchone()[0]
+        finally:
+            connection.close()
+
+    # *********************************** Testing Start ***********************************
+    def check_author(self, author_arr):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                author_id = []
+                for author in author_arr:
+                    cursor.execute('SELECT `id` FROM author WHERE `name` = %s;', (author.capitalize(),))
+                    result = cursor.fetchone()
+                    if result is None:
+                        continue
+                    else:
+                        author_id.append(result[0])
+                if len(author_id) != len(author_arr):
+                    return False
+                else:
+                    return author_id
+        finally:
+            connection.close()
+
+    def check_theme(self, theme_arr):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                theme_id = []
+                cursor.execute('SELECT `id`, theme_name FROM theme;')
+                result = cursor.fetchall()
+                for j in theme_arr:
+                    for i in result:
+                        if j.lower() == i[1].lower():
+                            theme_id.append(i[0])
+                if len(theme_id) != len(theme_arr):
+                    return False
+                else:
+                    return theme_id
+        finally:
+            connection.close()
+
+    def add_relation_to_article(self, author_id, theme_id, article_id):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                for author in author_id:
+                    cursor.execute(
+                        'INSERT INTO author_article (author_id, article_id) VALUES (%s, %s)', (author, article_id))
+                connection.commit()
+                for theme in theme_id:
+                    cursor.execute(
+                        'INSERT INTO theme_article (theme_id, article_id) VALUES (%s, %s)', (theme, article_id))
+                connection.commit()
+        finally:
+            connection.close()
+    # ************************************ Testing End ************************************
+
 
 sql_method = SqlMethods()
