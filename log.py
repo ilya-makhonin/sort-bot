@@ -8,7 +8,7 @@ LEVELS = {
 }
 
 
-def __get_formater():
+def __get_formatter():
     return logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
@@ -21,7 +21,7 @@ def __file_handler(file_name, formatter):
 def logger(name, file_name, log_level='DEBUG'):
     logger = logging.getLogger(name)
     logger.setLevel(LEVELS.get(log_level))
-    formatter = __get_formater()
+    formatter = __get_formatter()
     handler = __file_handler(file_name, formatter)
     logger.addHandler(handler)
     return logger
