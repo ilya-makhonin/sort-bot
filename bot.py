@@ -178,7 +178,7 @@ def bot_start(webhook_data, use_webhook=False):
     # global bot, states
 
     telebot.logger.setLevel(logging.DEBUG)
-    telebot.logger.addHandler(log.__file_handler('logs.log', log.__get_formater()))
+    telebot.logger.addHandler(log.__file_handler('logs.log', log.__get_formatter()))
 
     if not use_webhook:
         bot.remove_webhook()
