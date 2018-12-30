@@ -9,7 +9,7 @@ def flask_init(bot_object):
     webhook_app = flask.Flask(__name__)
     webhook_logger = webhook_app.logger
     webhook_logger.setLevel(log.LEVELS.get('DEBUG'))
-    webhook_logger.addHandler(log.__file_handler('logs.log', log.__get_formater()))
+    webhook_logger.addHandler(log.__file_handler('flask.log', log.__get_formatter()))
 
     @webhook_app.route('/', methods=['GET', 'HEAD'])
     def index():
@@ -30,7 +30,7 @@ def flask_init(bot_object):
 
 
 def start(use_webhook=False, **webhook_data):
-    logger = log.logger('main', 'logs.log')
+    logger = log.logger('main', 'main.log')
     try:
         bot_object = bot.bot_start(use_webhook=use_webhook, webhook_data=webhook_data)
         if use_webhook:
@@ -49,42 +49,3 @@ if __name__ == '__main__':
         token=token,
         ssl_cert='ssl_cert'
     )
-
-
-"""
-def create_server():
-    logger = telebot.logger
-    telebot.logger.setLevel(logging.INFO)
-    app = flask.Flask(__name__)
-
-    @app.route('/', methods=['GET', 'HEAD'])
-    def index():
-        return ''
-
-    @app.route(WEBHOOK_URL_PATH, methods=['POST'])
-    def webhook():
-        if flask.request.headers.get('content-type') == 'application/json':
-            json_string = flask.request.get_data().decode('utf-8')
-            update = telebot.types.Update.de_json(json_string)
-            bot.process_new_updates([update])
-            return ''
-        else:
-            flask.abort(403)
-    return app
-
-
-def start_server():
-    app = create_server()
-    bot.remove_webhook()
-    time.sleep(0.1)
-    bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
-                    certificate=open(WEBHOOK_SSL_CERT, 'r'))
-    app.run(host=WEBHOOK_LISTEN,
-            port=WEBHOOK_PORT,
-            ssl_context=(WEBHOOK_SSL_CERT, WEBHOOK_SSL_PRIV),
-            debug=True)
-
-
-if __name__ == '__main__':
-    start_server()
-"""
