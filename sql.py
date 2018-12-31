@@ -1,12 +1,13 @@
 import pymysql
+from config import *
 
 
 class SqlMethods:
     def __init__(self):
-        self.host = 'localhost'
-        self.user = 'root'
-        self.password = '123456'
-        self.db = 'it_root_articles'
+        self.host = db_host
+        self.user = db_user
+        self.password = db_pass
+        self.db = dn_name
 
     def get_connection(self):
         connection = pymysql.connections.Connection(
