@@ -83,7 +83,7 @@ class SqlMethods:
         try:
             with connection.cursor() as cursor:
                 cursor.execute('SELECT `name`, `url` FROM articles WHERE `name` = %s;', (name,))
-                return cursor.fetchone()
+                return cursor.fetchone() or ['Упс!', 'Такой статьи не существует!']
         finally:
             connection.close()
 
@@ -98,7 +98,6 @@ class SqlMethods:
         finally:
             connection.close()
 
-    # *********************************** Testing Start ***********************************
     def check_author(self, author_arr):
         connection = self.get_connection()
         try:
@@ -150,7 +149,6 @@ class SqlMethods:
                 connection.commit()
         finally:
             connection.close()
-    # ************************************ Testing End ************************************
 
     def add_theme(self, theme_name):
         connection = self.get_connection()
