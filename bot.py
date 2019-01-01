@@ -19,6 +19,7 @@ def get_markup(buttons, rows=1):
 
 def pre_modified_button(buttons,  level=False, start=0, finish=20, add_next=True):
     result = []
+    # ***** Create buttons list *****
     if level is not False:
         result.append(level)
     for button in buttons[start:finish]:
@@ -27,24 +28,25 @@ def pre_modified_button(buttons,  level=False, start=0, finish=20, add_next=True
         result.append('Далее')
     if finish > 20:
         result.append('Назад')
+    # *******************************
     return get_markup(result)
 
 
-def next_back(message):
-    state_user = db.get_state(message.from_user.id)
-    if message.text == 'Далее':
-        pass
-    if message.text == 'Назад':
-        pass
+# def next_back(message):
+#     state_user = db.get_state(message.from_user.id)
+#     if message.text == 'Далее':
+#         pass
+#     if message.text == 'Назад':
+#         pass
 
 
-def article_by(message, state_type, table, back_to):
-    db.change_state(state_type, message.from_user.id)
+def article_by(message, state_type, table, back_to, mess):
     bot.send_message(
         message.from_user.id,
-        text=author_mes.format(message.text),
+        text=mess.format(message.text),
         parse_mode='markdown',
         reply_markup=pre_modified_button(db.get_articles(table, message.text), back_to))
+    db.change_state(state_type, message.from_user.id)
 
 
 def article_choice(message, back_to, state_type, handler):
@@ -118,7 +120,7 @@ def download_theme(message: telebot.types.Message):
 
 
 # Back to main menu (Article by author, Article by theme, All articles)
-@bot.message_handler(regexp=first_level_back)
+@bot.message_handler(func=lambda message: message.text == first_level_back)
 def back_to_main_menu(message: telebot.types.Message):
     db.change_state('starting', message.from_user.id)
     bot.send_message(
@@ -132,20 +134,11 @@ def back_to_main_menu(message: telebot.types.Message):
         reply_markup=get_markup(main_menu))
 
 
-@bot.message_handler(regexp='По авторам')
-def author_handler(message: telebot.types.Message):
-    db.change_state('author', message.from_user.id)
-    bot.send_message(
-        message.from_user.id,
-        text=hello_author_mes,
-        parse_mode='markdown',
-        reply_markup=pre_modified_button(db.get_info_by_choice('author'), first_level_back)
-    )
-
-
+# *************************************** Get by state ***************************************
+# ********************************************************************************************
 @bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'author')
 def author_list_articles(message: telebot.types.Message):
-    article_by(message, 'author_choice', 'author', back_to_author)
+    article_by(message, 'author_choice', 'author', back_to_author, author_mes)
 
 
 @bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'author_choice')
@@ -153,20 +146,9 @@ def get_article_author(message: telebot.types.Message):
     article_choice(message, back_to_author, 'author', author_handler)
 
 
-@bot.message_handler(regexp='По темам')
-def theme_handler(message: telebot.types.Message):
-    db.change_state('theme', message.from_user.id)
-    bot.send_message(
-        message.from_user.id,
-        text=hello_theme_mes,
-        parse_mode='markdown',
-        reply_markup=pre_modified_button(db.get_info_by_choice('theme'), first_level_back)
-    )
-
-
 @bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'theme')
 def theme_list_articles(message: telebot.types.Message):
-    article_by(message, 'theme_choice', 'theme', back_to_theme)
+    article_by(message, 'theme_choice', 'theme', back_to_theme, theme_mes)
 
 
 @bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'theme_choice')
@@ -174,20 +156,42 @@ def get_article_theme(message: telebot.types.Message):
     article_choice(message, back_to_theme, 'theme', theme_handler)
 
 
+@bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'all_articles')
+def all_list_articles(message: telebot.types.Message):
+    article = db.get_article(message.text)
+    bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
+# ********************************************************************************************
+# ********************************************************************************************
+
+
+@bot.message_handler(regexp='По авторам')
+def author_handler(message: telebot.types.Message):
+    bot.send_message(
+        message.from_user.id,
+        text=hello_author_mes,
+        parse_mode='markdown',
+        reply_markup=pre_modified_button(db.get_info_by_choice('author'), first_level_back))
+    db.change_state('author', message.from_user.id)
+
+
+@bot.message_handler(regexp='По темам')
+def theme_handler(message: telebot.types.Message):
+    bot.send_message(
+        message.from_user.id,
+        text=hello_theme_mes,
+        parse_mode='markdown',
+        reply_markup=pre_modified_button(db.get_info_by_choice('theme'), first_level_back))
+    db.change_state('theme', message.from_user.id)
+
+
 @bot.message_handler(regexp='Я сам выберу')
 def all_articles_handler(message: telebot.types.Message):
-    db.change_state('all_articles', message.from_user.id)
     bot.send_message(
         message.from_user.id,
         text=hello_all_mes,
         parse_mode='markdown',
         reply_markup=pre_modified_button(db.get_articles('all'), first_level_back))
-
-
-@bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'all_articles')
-def all_list_articles(message: telebot.types.Message):
-    article = db.get_article(message.text)
-    bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
+    db.change_state('all_articles', message.from_user.id)
 
 
 # ************************************ Bot start function *************************************
