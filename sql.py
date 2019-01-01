@@ -152,5 +152,21 @@ class SqlMethods:
             connection.close()
     # ************************************ Testing End ************************************
 
+    def add_theme(self, theme_name):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT theme_name FROM theme;')
+                theme_list = cursor.fetchall()
+                for theme in theme_list:
+                    if theme[0].lower() == theme_name.lower():
+                        return False
+                cursor.execute('INSERT INTO theme (theme_name) VALUES (%s)', (theme_name,))
+                connection.commit()
+                cursor.execute('SELECT theme_name FROM theme ORDER BY `id` DESC LIMIT 1;')
+                return cursor.fetchone()[0]
+        finally:
+            connection.close()
+
 
 sql_method = SqlMethods()
