@@ -67,6 +67,24 @@ def download_articles(message: telebot.types.Message):
                 bot.send_message(message.from_user.id, download_success)
 
 
+@bot.message_handler(commands=['downloadtheme'])
+def download_theme(message: telebot.types.Message):
+    admins_list = [i[1] for i in db.get_info_by_choice('author')]
+    if message.from_user.id in admins_list:
+        theme_name = (message.text[15:].replace('#', '')).strip()
+        if theme_name == '':
+            bot.send_message(message.from_user.id, 'Вы не ввели тему!')
+        else:
+            result = db.add_theme(theme_name)
+            if not result:
+                bot.send_message(message.from_user.id, 'Данная тема уже существует!')
+            else:
+                bot.send_message(
+                    message.from_user.id,
+                    'Тема *{}* успешно добавленна!'.format(theme_name),
+                    parse_mode='markdown')
+
+
 @bot.message_handler(regexp=first_level_back)
 def back_to_main_menu(message: telebot.types.Message):
     db.change_state('starting', message.from_user.id)
