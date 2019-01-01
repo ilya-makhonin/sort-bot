@@ -2,7 +2,7 @@ import telebot
 from sql import sql_method as db
 from constants import *
 import config
-import multiprocessing
+# import multiprocessing
 import time
 import log
 import logging
@@ -17,15 +17,43 @@ def get_markup(buttons, rows=1):
     return markup
 
 
-def pre_modified_button(buttons, level=False):
+def pre_modified_button(buttons,  level=False, start=0, finish=20, add_next=True):
     result = []
     if level is not False:
         result.append(level)
-    for button in buttons:
+    for button in buttons[start:finish]:
         result.append(button[-1])
-    if len(result) > 20:
-        pass
+    if add_next:
+        result.append('Далее')
+    if finish > 20:
+        result.append('Назад')
     return get_markup(result)
+
+
+def next_back(message):
+    state_user = db.get_state(message.from_user.id)
+    if message.text == 'Далее':
+        pass
+    if message.text == 'Назад':
+        pass
+
+
+def article_by(message, state_type, table, back_to):
+    db.change_state(state_type, message.from_user.id)
+    bot.send_message(
+        message.from_user.id,
+        text=author_mes.format(message.text),
+        parse_mode='markdown',
+        reply_markup=pre_modified_button(db.get_articles(table, message.text), back_to))
+
+
+def article_choice(message, back_to, state_type, handler):
+    if message.text == back_to:
+        db.change_state(state_type, message.from_user.id)
+        handler(message)
+    else:
+        article = db.get_article(message.text)
+        bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
 
 
 @bot.message_handler(commands=['start'])
@@ -42,7 +70,9 @@ def start_handler(message: telebot.types.Message):
         reply_markup=get_markup(main_menu))
 
 
-@bot.message_handler(commands=['downloadarticles'])   # Testing
+# **************************************** Admin panel ****************************************
+# *********************************************************************************************
+@bot.message_handler(commands=['downloadarticle'])
 def download_articles(message: telebot.types.Message):
     admins_list = [i[1] for i in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
@@ -83,8 +113,11 @@ def download_theme(message: telebot.types.Message):
                     message.from_user.id,
                     'Тема *{}* успешно добавленна!'.format(theme_name),
                     parse_mode='markdown')
+# *********************************************************************************************
+# *********************************************************************************************
 
 
+# Back to main menu (Article by author, Article by theme, All articles)
 @bot.message_handler(regexp=first_level_back)
 def back_to_main_menu(message: telebot.types.Message):
     db.change_state('starting', message.from_user.id)
@@ -112,22 +145,12 @@ def author_handler(message: telebot.types.Message):
 
 @bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'author')
 def author_list_articles(message: telebot.types.Message):
-    db.change_state('author_choice', message.from_user.id)
-    bot.send_message(
-        message.from_user.id,
-        text=author_mes.format(message.text),
-        parse_mode='markdown',
-        reply_markup=pre_modified_button(db.get_articles('author', message.text), back_to_author))
+    article_by(message, 'author_choice', 'author', back_to_author)
 
 
 @bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'author_choice')
 def get_article_author(message: telebot.types.Message):
-    if message.text == back_to_author:
-        db.change_state('author', message.from_user.id)
-        author_handler(message)
-    else:
-        article = db.get_article(message.text)
-        bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
+    article_choice(message, back_to_author, 'author', author_handler)
 
 
 @bot.message_handler(regexp='По темам')
@@ -143,22 +166,12 @@ def theme_handler(message: telebot.types.Message):
 
 @bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'theme')
 def theme_list_articles(message: telebot.types.Message):
-    db.change_state('theme_choice', message.from_user.id)
-    bot.send_message(
-        message.from_user.id,
-        text=theme_mes.format(message.text),
-        parse_mode='markdown',
-        reply_markup=pre_modified_button(db.get_articles('theme', message.text), back_to_theme))
+    article_by(message, 'theme_choice', 'theme', back_to_theme)
 
 
 @bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'theme_choice')
 def get_article_theme(message: telebot.types.Message):
-    if message.text == back_to_theme:
-        db.change_state('theme', message.from_user.id)
-        theme_handler(message)
-    else:
-        article = db.get_article(message.text)
-        bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
+    article_choice(message, back_to_theme, 'theme', theme_handler)
 
 
 @bot.message_handler(regexp='Я сам выберу')
@@ -177,6 +190,7 @@ def all_list_articles(message: telebot.types.Message):
     bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
 
 
+# ************************************ Bot start function *************************************
 def bot_start(webhook_data, use_webhook=False):
     def set_webhook(url, cert):
         try:
@@ -184,8 +198,8 @@ def bot_start(webhook_data, use_webhook=False):
         except Exception as err:
             print(err.with_traceback(None))
 
-    def webhook_isolated_run(url, cert):
-        multiprocessing.Process(target=set_webhook, args=(url, cert), daemon=True).start()
+    # def webhook_isolated_run(url, cert):
+    #     multiprocessing.Process(target=set_webhook, args=(url, cert), daemon=True).start()
 
     def args_check(args_names, checking_kwargs):
         for arg in args_names:
@@ -204,7 +218,7 @@ def bot_start(webhook_data, use_webhook=False):
     elif args_check(['webhook_ip', 'webhook_port', 'token', 'ssl_cert'], webhook_data):
         bot.remove_webhook()
         time.sleep(1)
-        webhook_isolated_run(
+        set_webhook(
             url='https://%s:%s/%s/' % (
                 webhook_data.get('webhook_ip'),
                 webhook_data.get('webhook_port'),
