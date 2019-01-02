@@ -3,11 +3,17 @@ from config import *
 
 
 class SqlMethods:
-    def __init__(self):
-        self.host = db_host
-        self.user = db_user
-        self.password = db_pass
-        self.db = dn_name
+    def __init__(self, remote=False):
+        if not remote:
+            self.host = 'localhost'
+            self.user = 'root'
+            self.password = '123456'
+            self.db = 'it_root_articles'
+        else:
+            self.host = db_host
+            self.user = db_user
+            self.password = db_pass
+            self.db = dn_name
 
     def get_connection(self):
         connection = pymysql.connections.Connection(
@@ -22,6 +28,8 @@ class SqlMethods:
                 if cursor.fetchone() is None:
                     cursor.execute('INSERT INTO `users` (user_id, username, name) VALUES (%s, %s, %s);',
                                    (user_id, username, name))
+                else:
+                    self.change_state('starting', user_id)
                 connection.commit()
         finally:
             connection.close()
