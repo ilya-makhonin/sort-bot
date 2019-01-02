@@ -1,9 +1,9 @@
 from sql import sql_method as db
 
 
-class Cash:
+class Cache:
     def __init__(self):
-        self.cash = {
+        self.cache = {
             'users': tuple,
             'author': tuple,
             'theme': tuple,
@@ -11,10 +11,7 @@ class Cash:
         }
 
     def get_db_information(self):
-        self.cash['users'] = db.get_info_by_choice('users')
-        self.cash['author'] = db.get_info_by_choice('author')
-        self.cash['theme'] = db.get_info_by_choice('theme')
-        self.cash['level'] = db.get_info_by_choice('level')
-
-
-cash = Cash()
+        self.cache['users'] = db.get_info_by_choice('users')
+        self.cache['author'] = db.get_info_by_choice('author')
+        self.cache['theme'] = db.get_info_by_choice('theme')
+        self.cache['level'] = db.get_info_by_choice('level')
