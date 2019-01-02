@@ -2,6 +2,9 @@ from sql import sql_method as db
 
 
 class Cache:
+    """
+    Cache for bot. It is need for optimization. Cache don't use now
+    """
     def __init__(self):
         self.cache = {
             'users': tuple,
