@@ -6,6 +6,7 @@ import config
 import time
 import log
 import logging
+from states import get_full_state, check_section, change_state
 
 
 bot = telebot.TeleBot(config.token)
@@ -17,42 +18,61 @@ def get_markup(buttons, rows=1):
     return markup
 
 
-def pre_modified_button(buttons,  level=False, start=0, finish=20, add_next=True):
+def pre_modified_button(buttons,  level=False, start=0, finish=20):
     result = []
     # ***** Create buttons list *****
     if level is not False:
         result.append(level)
     for button in buttons[start:finish]:
         result.append(button[-1])
-    if add_next:
+    if len(buttons) > finish:
         result.append('Далее')
-    if finish > 20:
+    if start > 0:
         result.append('Назад')
     # *******************************
     return get_markup(result)
 
 
-# def next_back(message):
-#     state_user = db.get_state(message.from_user.id)
-#     if message.text == 'Далее':
-#         pass
-#     if message.text == 'Назад':
-#         pass
+def next_back(message, back_to):
+    state_user = get_full_state(message.from_user.id)
+    button = tuple
+    if state_user == 'starting' or state_user == 'author':
+        return
+    elif state_user[0] == 'all':
+        buttons = db.get_articles(state_user[0])
+    elif state_user[0] == 'theme':
+        buttons = db.get_info_by_choice(state_user[0])
+    else:
+        buttons = db.get_articles()
+    if message.text == 'Далее':
+        bot.send_message(message.from_user.id, text='Далее', parse_mode='markdown',
+                          reply_markup=pre_modified_button(buttons, back_to, state_user[1] + 20, state_user[2] + 20))
+        change_state(message.from_user.id, state_user[0], pages='{}:{}'.format(state_user[1] + 20, state_user[2] + 20))
+    if message.text == 'Назад':
+        start = state_user[1] - 20 if state_user[1] - 20 >= 0 else 0
+        finish = state_user[2] - 20 if state_user[2] - 20 >= 20 else 20
+        bot.send_message(message.from_user.id, text='Назад', parse_mode='markdown',
+                         reply_markup=pre_modified_button(buttons, back_to, start, finish))
+        change_state(message.from_user.id, state_user[0], pages='{}:{}'.format(start, finish))
 
 
 def article_by(message, state_type, table, back_to, mess):
-    bot.send_message(
-        message.from_user.id,
-        text=mess.format(message.text),
-        parse_mode='markdown',
-        reply_markup=pre_modified_button(db.get_articles(table, message.text), back_to))
-    db.change_state(state_type, message.from_user.id)
+    if message.text == 'Далее' or message.text == 'Назад':
+        next_back(message, back_to)
+    else:
+        bot.send_message(
+            message.from_user.id,
+            text=mess.format(message.text),
+            parse_mode='markdown',
+            reply_markup=pre_modified_button(db.get_articles(table, message.text), back_to))
+        change_state(message.from_user.id, state_type, '0:20', message.text)
 
 
-def article_choice(message, back_to, state_type, handler):
+def article_choice(message, back_to, handler):
     if message.text == back_to:
-        db.change_state(state_type, message.from_user.id)
         handler(message)
+    elif message.text == 'Далее' or message.text == 'Назад':
+        next_back(message, back_to)
     else:
         article = db.get_article(message.text)
         bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
@@ -64,7 +84,6 @@ def start_handler(message: telebot.types.Message):
     if name is None:
         name = message.from_user.last_name
     db.add_user(message.from_user.id, message.from_user.username, name)
-    db.change_state('starting', message.from_user.id)
     bot.send_message(
         message.from_user.id,
         text=start_message,
@@ -122,7 +141,7 @@ def download_theme(message: telebot.types.Message):
 # Back to main menu (Article by author, Article by theme, All articles)
 @bot.message_handler(func=lambda message: message.text == first_level_back)
 def back_to_main_menu(message: telebot.types.Message):
-    db.change_state('starting', message.from_user.id)
+    change_state(message.from_user.id, state['st'])
     bot.send_message(
         message.from_user.id,
         'Go back, bro!',
@@ -136,30 +155,33 @@ def back_to_main_menu(message: telebot.types.Message):
 
 # *************************************** Get by state ***************************************
 # ********************************************************************************************
-@bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'author')
+@bot.message_handler(func=lambda message: check_section(message.from_user.id, state['at']))
 def author_list_articles(message: telebot.types.Message):
-    article_by(message, 'author_choice', 'author', back_to_author, author_mes)
+    article_by(message, state['ac'], 'author', back_to_author, author_mes)
 
 
-@bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'author_choice')
+@bot.message_handler(func=lambda message: check_section(message.from_user.id, state['ac']))
 def get_article_author(message: telebot.types.Message):
-    article_choice(message, back_to_author, 'author', author_handler)
+    article_choice(message, back_to_author, author_handler)
 
 
-@bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'theme')
+@bot.message_handler(func=lambda message: check_section(message.from_user.id, state['th']))
 def theme_list_articles(message: telebot.types.Message):
-    article_by(message, 'theme_choice', 'theme', back_to_theme, theme_mes)
+    article_by(message, state['tc'], 'theme', back_to_theme, theme_mes)
 
 
-@bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'theme_choice')
+@bot.message_handler(func=lambda message: check_section(message.from_user.id, state['tc']))
 def get_article_theme(message: telebot.types.Message):
-    article_choice(message, back_to_theme, 'theme', theme_handler)
+    article_choice(message, back_to_theme, theme_handler)
 
 
-@bot.message_handler(func=lambda message: db.get_state(message.from_user.id) == 'all_articles')
+@bot.message_handler(func=lambda message: check_section(message.from_user.id, state['al']))
 def all_list_articles(message: telebot.types.Message):
-    article = db.get_article(message.text)
-    bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
+    if message.text == 'Далее' or message.text == 'Назад':
+        next_back(message, first_level_back)
+    else:
+        article = db.get_article(message.text)
+        bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
 # ********************************************************************************************
 # ********************************************************************************************
 
@@ -171,7 +193,7 @@ def author_handler(message: telebot.types.Message):
         text=hello_author_mes,
         parse_mode='markdown',
         reply_markup=pre_modified_button(db.get_info_by_choice('author'), first_level_back))
-    db.change_state('author', message.from_user.id)
+    change_state(message.from_user.id, state['at'])
 
 
 @bot.message_handler(regexp='По темам')
@@ -181,7 +203,7 @@ def theme_handler(message: telebot.types.Message):
         text=hello_theme_mes,
         parse_mode='markdown',
         reply_markup=pre_modified_button(db.get_info_by_choice('theme'), first_level_back))
-    db.change_state('theme', message.from_user.id)
+    change_state(message.from_user.id, state['th'], '0:20')
 
 
 @bot.message_handler(regexp='Я сам выберу')
@@ -191,7 +213,7 @@ def all_articles_handler(message: telebot.types.Message):
         text=hello_all_mes,
         parse_mode='markdown',
         reply_markup=pre_modified_button(db.get_articles('all'), first_level_back))
-    db.change_state('all_articles', message.from_user.id)
+    change_state(message.from_user.id, state['al'], '0:20')
 
 
 # ************************************ Bot start function *************************************
@@ -213,8 +235,8 @@ def bot_start(webhook_data, use_webhook=False):
 
     # global bot, states
 
-    telebot.logger.setLevel(logging.DEBUG)
-    telebot.logger.addHandler(log.__file_handler('logs.log', log.__get_formatter()))
+    # telebot.logger.setLevel(logging.DEBUG)
+    # telebot.logger.addHandler(log.__file_handler('logs.log', log.__get_formatter()))
 
     if not use_webhook:
         bot.remove_webhook()
