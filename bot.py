@@ -46,6 +46,11 @@ def pre_modified_button(buttons,  level=False, start=0, finish=20):
 
 
 def next_back(message, back_to):
+    """
+    :param message: user message
+    :param back_to: back to location (main menu, author/theme list) type <str>
+    :return: return nothing
+    """
     state_user = get_full_state(message.from_user.id)
     # If state equally starting or author - don't action
     if state_user[0] == state['st'] or state_user[0] == state['at']:
@@ -250,6 +255,12 @@ def all_articles_handler(message: telebot.types.Message):
 # ************************************ Bot start function *************************************
 # *********************************************************************************************
 def bot_start(webhook_data, use_webhook=False, logging_enable=False):
+    """
+    :param webhook_data: data for deploy type <dict>
+    :param use_webhook: type <bul>
+    :param logging_enable: type <bul>
+    :return: bot object
+    """
     def set_webhook(url, cert):
         try:
             telebot.apihelper.set_webhook(config.token, url=url, certificate=cert)
