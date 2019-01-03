@@ -19,6 +19,12 @@ def __file_handler(file_name, formatter):
 
 
 def logger(name, file_name, log_level='DEBUG'):
+    """
+    :param name: logger name type <str>
+    :param file_name: file for log info type <str>
+    :param log_level: type logging type <str>
+    :return: logger object
+    """
     logger = logging.getLogger(name)
     logger.setLevel(LEVELS.get(log_level))
     formatter = __get_formatter()
