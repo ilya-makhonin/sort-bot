@@ -113,6 +113,20 @@ def start_handler(message: telebot.types.Message):
 
 # **************************************** Admin panel ****************************************
 # *********************************************************************************************
+@bot.message_handler(commands=['global'])
+def global_mailing(message: telebot.types.Message):
+    admins_list = [i[1] for i in db.get_info_by_choice('author')]
+    if message.from_user.id in admins_list:
+        users_id = [i[1] for i in db.get_info_by_choice('users')]
+        for user_id in users_id:
+            try:
+                bot.send_message(user_id, message.text[8:].split(), parse_mode='HTML')
+            except Exception:
+                continue
+    else:
+        pass
+
+
 @bot.message_handler(commands=['downloadarticle'])
 def download_articles(message: telebot.types.Message):
     admins_list = [i[1] for i in db.get_info_by_choice('author')]
