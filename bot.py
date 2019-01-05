@@ -78,11 +78,8 @@ def next_back(message, back_to):
 
 
 def article_by(message, state_type, table, back_to, mess):
-    bot.send_message(
-        message.from_user.id,
-        text=mess.format(message.text),
-        parse_mode='markdown',
-        reply_markup=pre_modified_button(db.get_articles(table, message.text), back_to))
+    bot.send_message(message.from_user.id, mess.format(message.text), parse_mode='markdown',
+                     reply_markup=pre_modified_button(db.get_articles(table, message.text), back_to))
     change_state(message.from_user.id, state_type, '0:20', message.text)
 
 
@@ -103,10 +100,12 @@ def start_handler(message: telebot.types.Message):
         name = message.from_user.last_name
     db.add_user(message.from_user.id, message.from_user.username, name)
     bot.send_message(
-        message.from_user.id,
-        text=start_message,
-        parse_mode='markdown',
-        reply_markup=get_markup(main_menu))
+        message.from_user.id, start_message, parse_mode='markdown', reply_markup=get_markup(main_menu))
+
+
+@bot.message_handler(commands=['help'])
+def help_handler(message: telebot.types.Message):
+    bot.send_message(message.from_user.id, help_mes, parse_mode='markdown', reply_markup=get_markup(main_menu))
 # *********************************************************************************************
 # *********************************************************************************************
 
@@ -164,10 +163,8 @@ def download_theme(message: telebot.types.Message):
             if not result:
                 bot.send_message(message.from_user.id, 'Данная тема уже существует!')
             else:
-                bot.send_message(
-                    message.from_user.id,
-                    'Тема *{}* успешно добавленна!'.format(theme_name),
-                    parse_mode='markdown')
+                bot.send_message(message.from_user.id, 'Тема *{}* успешно добавленна!'.format(theme_name),
+                                 parse_mode='markdown')
 # *********************************************************************************************
 # *********************************************************************************************
 
@@ -177,15 +174,8 @@ def download_theme(message: telebot.types.Message):
 @bot.message_handler(func=lambda message: message.text == first_level_back)
 def back_to_main_menu(message: telebot.types.Message):
     change_state(message.from_user.id, state['st'])
-    bot.send_message(
-        message.from_user.id,
-        'Go back, bro!',
-        reply_markup=telebot.types.ReplyKeyboardRemove())
-    bot.send_message(
-        message.from_user.id,
-        text=start_message,
-        parse_mode='markdown',
-        reply_markup=get_markup(main_menu))
+    bot.send_message(message.from_user.id, 'Go back, bro!', reply_markup=telebot.types.ReplyKeyboardRemove())
+    bot.send_message(message.from_user.id, start_message, parse_mode='markdown', reply_markup=get_markup(main_menu))
 # *********************************************************************************************
 # *********************************************************************************************
 
@@ -236,31 +226,22 @@ def all_list_articles(message: telebot.types.Message):
 # ********************************************************************************************
 @bot.message_handler(regexp='По авторам')
 def author_handler(message: telebot.types.Message):
-    bot.send_message(
-        message.from_user.id,
-        text=hello_author_mes,
-        parse_mode='markdown',
-        reply_markup=pre_modified_button(db.get_info_by_choice('author'), first_level_back))
+    bot.send_message(message.from_user.id, hello_author_mes, parse_mode='markdown',
+                     reply_markup=pre_modified_button(db.get_info_by_choice('author'), first_level_back))
     change_state(message.from_user.id, state['at'])
 
 
 @bot.message_handler(regexp='По темам')
 def theme_handler(message: telebot.types.Message):
-    bot.send_message(
-        message.from_user.id,
-        text=hello_theme_mes,
-        parse_mode='markdown',
-        reply_markup=pre_modified_button(db.get_info_by_choice('theme'), first_level_back))
+    bot.send_message(message.from_user.id, hello_theme_mes, parse_mode='markdown',
+                     reply_markup=pre_modified_button(db.get_info_by_choice('theme'), first_level_back))
     change_state(message.from_user.id, state['th'], '0:20')
 
 
 @bot.message_handler(regexp='Я сам выберу')
 def all_articles_handler(message: telebot.types.Message):
-    bot.send_message(
-        message.from_user.id,
-        text=hello_all_mes,
-        parse_mode='markdown',
-        reply_markup=pre_modified_button(db.get_articles('all'), first_level_back))
+    bot.send_message(message.from_user.id, hello_all_mes, parse_mode='markdown',
+                     reply_markup=pre_modified_button(db.get_articles('all'), first_level_back))
     change_state(message.from_user.id, state['al'], '0:20')
 # ********************************************************************************************
 # ********************************************************************************************
