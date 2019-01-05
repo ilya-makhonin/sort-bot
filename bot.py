@@ -112,6 +112,15 @@ def help_handler(message: telebot.types.Message):
 
 # **************************************** Admin panel ****************************************
 # *********************************************************************************************
+@bot.message_handler(commands=['helping'])
+def helping_handler(message: telebot.types.Message):
+    admins_list = [i[1] for i in db.get_info_by_choice('author')]
+    if message.from_user.id in admins_list:
+        bot.send_message(message.from_user.id, helping_text, parse_mode='HTML')
+    else:
+        pass
+
+
 @bot.message_handler(commands=['global'])
 def global_mailing(message: telebot.types.Message):
     admins_list = [i[1] for i in db.get_info_by_choice('author')]
