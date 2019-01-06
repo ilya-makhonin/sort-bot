@@ -47,5 +47,5 @@ if __name__ == '__main__':
         webhook_ip=WEBHOOK_HOST,
         webhook_port=WEBHOOK_PORT,
         token=token,
-        ssl_cert='ssl_cert'
-    )
+        ssl_cert=SSL_SERT)
+    app.run(host=WEBHOOK_LISTEN, port=WEBHOOK_PORT, ssl_context=(SSL_SERT, SSL_POM))
