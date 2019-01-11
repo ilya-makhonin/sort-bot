@@ -114,7 +114,7 @@ def help_handler(message: telebot.types.Message):
 # *********************************************************************************************
 @bot.message_handler(commands=['helping'])
 def helping_handler(message: telebot.types.Message):
-    admins_list = [i[1] for i in db.get_info_by_choice('author')]
+    admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
         bot.send_message(message.from_user.id, helping_text, parse_mode='HTML')
     else:
@@ -123,9 +123,9 @@ def helping_handler(message: telebot.types.Message):
 
 @bot.message_handler(commands=['global'])
 def global_mailing(message: telebot.types.Message):
-    admins_list = [i[1] for i in db.get_info_by_choice('author')]
+    admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
-        users_id = [i[1] for i in db.get_info_by_choice('users')]
+        users_id = [user[1] for user in db.get_info_by_choice('users')]
         for user_id in users_id:
             try:
                 bot.send_message(user_id, message.text[8:].split(), parse_mode='HTML')
@@ -137,32 +137,36 @@ def global_mailing(message: telebot.types.Message):
 
 @bot.message_handler(commands=['downloadarticle'])
 def download_articles(message: telebot.types.Message):
-    admins_list = [i[1] for i in db.get_info_by_choice('author')]
+    admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
-        article = message.text[18:].split('|')
+        article = message.text[18:].split('|')   # like ['authors', 'themes', 'name', 'link']
         if len(article) < 4:
             bot.send_message(message.from_user.id, download_incorrect, parse_mode='HTML')
         else:
-            authors = [(author.replace('#', '')).strip() for author in article[0].split(' ')]
-            themes = [(theme.replace('#', '')).strip() for theme in article[1].split(' ')]
-            author_correct = db.check_author(authors)
-            theme_correct = db.check_theme(themes)
-            download_error = 'Отчёт:\n\n'
+            # format authors string type <list> like ['Naize', ...]
+            authors = [(author.replace('#', '')) for author in article[0].split(' ')]
+            # format themes string type <list> like ['Frontend', ...]
+            themes = [(theme.replace('#', '')) for theme in article[1].split(' ')]
+
+            # Validation of input data (authors and themes)
+            author_correct = db.check_author(authors)       # return type <list> like [1, 2, 3]
+            theme_correct = db.check_theme(themes)          # return type <list> like [<int>,...]
             if not author_correct or not theme_correct:
+                download_error = 'Отчёт:\n\n'
                 if not author_correct:
                     download_error += author_error + '\n'
                 if not theme_correct:
                     download_error += theme_error
                 bot.send_message(message.from_user.id, download_error)
             else:
-                article_id = db.add_article(article[2].strip(), article[3].strip())
-                db.add_relation_to_article(author_correct, theme_correct, article_id)
+                article_id = db.add_article(article[2].strip(), article[3].strip())   # get id of a article type <int>
+                db.add_relation_to_article(author_correct, theme_correct, article_id)   # set many to many relationship
                 bot.send_message(message.from_user.id, download_success)
 
 
 @bot.message_handler(commands=['downloadtheme'])
 def download_theme(message: telebot.types.Message):
-    admins_list = [i[1] for i in db.get_info_by_choice('author')]
+    admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
         theme_name = (message.text[15:].replace('#', '')).strip()
         if theme_name == '':
