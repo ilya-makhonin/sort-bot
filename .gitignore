@@ -3,3 +3,4 @@ __pycache__/
 config.py
 bot-example.py
 *.log
+*.pem
