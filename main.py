@@ -32,7 +32,7 @@ def flask_init(bot_object):
 def start(use_webhook=False, **webhook_data):
     logger = log.logger('main', 'main.log')
     try:
-        bot_object = bot.bot_start(webhook_data=webhook_data, use_webhook=use_webhook, logging_enable=False)
+        bot_object = bot.bot_start(webhook_data=webhook_data, use_webhook=use_webhook, logging_enable=True)
         if use_webhook:
             server = flask_init(bot_object)
             return server
