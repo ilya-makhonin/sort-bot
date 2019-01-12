@@ -10,10 +10,10 @@ class SqlMethods:
             self.password = '123456'
             self.db = 'it_root_articles'
         else:
-            self.host = db_host
-            self.user = db_user
-            self.password = db_pass
-            self.db = dn_name
+            self.host = HOST
+            self.user = USER
+            self.password = PASS
+            self.db = DB
 
     def get_connection(self):
         connection = pymysql.connections.Connection(
@@ -175,4 +175,4 @@ class SqlMethods:
             connection.close()
 
 
-sql_method = SqlMethods()
+sql_method = SqlMethods(remote=True)
