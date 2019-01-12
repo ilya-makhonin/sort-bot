@@ -115,7 +115,7 @@ def help_handler(message: telebot.types.Message):
 def helping_handler(message: telebot.types.Message):
     admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
-        bot.send_message(message.from_user.id, helping_text, parse_mode='HTML')
+        bot.send_message(message.from_user.id, helping_text, parse_mode='markdown')
     else:
         pass
 
@@ -124,12 +124,16 @@ def helping_handler(message: telebot.types.Message):
 def global_mailing(message: telebot.types.Message):
     admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
-        users_id = [user[1] for user in db.get_info_by_choice('users')]
-        for user_id in users_id:
-            try:
-                bot.send_message(user_id, message.text[8:].split(), parse_mode='HTML')
-            except Exception:
-                continue
+        text = message.text[8:].split()
+        if text == '':
+            bot.send_message(message.from_user.id, 'Вы не ввели текст рассылки!')
+        else:
+            users_id = [user[1] for user in db.get_info_by_choice('users')]
+            for user_id in users_id:
+                try:
+                    bot.send_message(user_id, text, parse_mode='HTML')
+                except Exception:
+                    continue
     else:
         pass
 
