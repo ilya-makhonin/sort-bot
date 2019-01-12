@@ -124,7 +124,7 @@ def helping_handler(message: telebot.types.Message):
 def global_mailing(message: telebot.types.Message):
     admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
-        text = message.text[8:].split()
+        text = message.text[8:].strip()
         if text == '':
             bot.send_message(message.from_user.id, 'Вы не ввели текст рассылки!')
         else:
