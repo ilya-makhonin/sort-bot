@@ -2,7 +2,6 @@ import telebot
 from sql import sql_method as db
 from constants import *
 import config
-# import multiprocessing
 import time
 import log
 import logging
@@ -269,14 +268,14 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
     :param logging_enable: type <bul>
     :return: bot object
     """
+    global bot
+
     def set_webhook(url, cert):
         try:
-            telebot.apihelper.set_webhook(config.token, url=url, certificate=cert)
+            # telebot.apihelper.set_webhook(config.token, url=url, certificate=cert)
+            bot.set_webhook(url=url, certificate=cert)
         except Exception as err:
             print(err.with_traceback(None))
-
-    # def webhook_isolated_run(url, cert):
-    #     multiprocessing.Process(target=set_webhook, args=(url, cert), daemon=True).start()
 
     def args_check(args_names, checking_kwargs):
         for arg in args_names:
@@ -284,14 +283,12 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
                 return False
         return True
 
-    # global bot, states
-
     if logging_enable:
         telebot.logger.setLevel(logging.DEBUG)
         telebot.logger.addHandler(log.__file_handler('logs.log', log.__get_formatter()))
 
     if not use_webhook:
-        bot.remove_webhook()
+        print('Bot running without web hook')
         bot.polling(none_stop=True)
     elif args_check(['webhook_ip', 'webhook_port', 'token', 'ssl_cert'], webhook_data):
         bot.remove_webhook()
@@ -306,9 +303,3 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
     else:
         raise Exception('Params for start with webhook is not specified')
     return bot
-# *********************************************************************************************
-# *********************************************************************************************
-
-
-if __name__ == '__main__':
-    bot_start({})
