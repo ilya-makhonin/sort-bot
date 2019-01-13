@@ -1,5 +1,6 @@
 import pymysql
 from config import *
+import log
 
 
 class SqlMethods:
@@ -103,7 +104,9 @@ class SqlMethods:
                 connection.commit()
                 cursor.execute('SELECT `id` FROM articles ORDER BY `id` DESC LIMIT 1;')
                 return cursor.fetchone()[0]
-        except:
+        except Exception as error:
+            logging = log.logger('sql', 'sql.log', log.LEVELS.get('WARNING'))
+            logging.warning(error)
             return False
         finally:
             connection.close()
