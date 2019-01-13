@@ -21,9 +21,9 @@ def flask_init(bot_object):
             json_string = flask.request.get_data().decode('utf-8')
             update = telebot.types.Update.de_json(json_string)
             bot_object.process_new_updates([update])
-            webhook_logger.debug('updates from webhook: ' + str(update))
             return ''
         else:
+            webhook_logger.warning('Abort 403')
             flask.abort(403)
 
     return webhook_app
