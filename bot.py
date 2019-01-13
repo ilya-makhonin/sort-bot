@@ -288,11 +288,10 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
         return True
 
     if logging_enable:
-        telebot.logger.setLevel(logging.DEBUG)
-        telebot.logger.addHandler(log.__file_handler('logs.log', log.__get_formatter()))
+        telebot.logger.setLevel(logging.WARNING)
+        telebot.logger.addHandler(log.__file_handler('bot.log', log.__get_formatter()))
 
     if not use_webhook:
-        print('Bot running without web hook')
         bot.polling(none_stop=True)
     elif args_check(['webhook_ip', 'webhook_port', 'token', 'ssl_cert'], webhook_data):
         bot.remove_webhook()
@@ -306,4 +305,3 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
         return bot
     else:
         raise Exception('Params for start with webhook is not specified')
-    return bot
