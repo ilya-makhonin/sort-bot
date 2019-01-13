@@ -142,7 +142,7 @@ def global_mailing(message: telebot.types.Message):
 def download_articles(message: telebot.types.Message):
     admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
-        article = message.text[18:].split('|')   # like ['authors', 'themes', 'name', 'link']
+        article = message.text[17:].split('|')   # like ['authors', 'themes', 'name', 'link']
         if len(article) < 4:
             bot.send_message(message.from_user.id, download_incorrect, parse_mode='HTML')
         else:
@@ -163,6 +163,9 @@ def download_articles(message: telebot.types.Message):
                 bot.send_message(message.from_user.id, download_error)
             else:
                 article_id = db.add_article(article[2].strip(), article[3].strip())   # get id of a article type <int>
+                if not article_id:
+                    bot.send_message(message.from_user.id, 'Статья с таким названием уже существует! Используйте другое название')
+                    return
                 db.add_relation_to_article(author_correct, theme_correct, article_id)   # set many to many relationship
                 bot.send_message(message.from_user.id, download_success)
 
