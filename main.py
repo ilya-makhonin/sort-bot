@@ -8,7 +8,7 @@ import log
 def flask_init(bot_object):
     webhook_app = flask.Flask(__name__)
     webhook_logger = webhook_app.logger
-    webhook_logger.setLevel(log.LEVELS.get('DEBUG'))
+    webhook_logger.setLevel(log.LEVELS.get('WARNING'))
     webhook_logger.addHandler(log.__file_handler('flask.log', log.__get_formatter()))
 
     @webhook_app.route('/', methods=['GET', 'HEAD'])
@@ -42,7 +42,7 @@ def start(use_webhook=False, **webhook_data):
         logger.exception(err)
 
 
-app = start(use_webhook=False, webhook_ip=WEBHOOK_HOST, webhook_port=WEBHOOK_PORT, token=token, ssl_cert=SSL_SERT)
+app = start(use_webhook=True, webhook_ip=WEBHOOK_HOST, webhook_port=WEBHOOK_PORT, token=token, ssl_cert=SSL_SERT)
 
 if __name__ == '__main__':
     app.run(host=WEBHOOK_LISTEN, port=WEBHOOK_PORT, ssl_context=(SSL_SERT, SSL_POM))
