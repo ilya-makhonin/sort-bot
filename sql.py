@@ -103,6 +103,8 @@ class SqlMethods:
                 connection.commit()
                 cursor.execute('SELECT `id` FROM articles ORDER BY `id` DESC LIMIT 1;')
                 return cursor.fetchone()[0]
+        except:
+            return False
         finally:
             connection.close()
 
