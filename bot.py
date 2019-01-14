@@ -17,7 +17,7 @@ def get_markup(buttons, rows=1):
     :param rows: rows width count
     :return: bot markup type '<telebot.types.ReplyKeyboardMarkup object at 0x000001819664CCF8>'
     """
-    markup = telebot.types.ReplyKeyboardMarkup(True, True, row_width=rows)
+    markup = telebot.types.ReplyKeyboardMarkup(True, False, row_width=rows)
     markup.add(*buttons)
     return markup
 
@@ -46,8 +46,8 @@ def pre_modified_button(buttons,  level=False, start=0, finish=20):
 
 def next_back(message, back_to):
     """
-    :param message: user message
-    :param back_to: back to location (main menu, author/theme list) type <str>
+    :param message: Message object with data about user, chat, etc type <class>
+    :param back_to: Back to location (main menu, author/theme list) type <str>
     :return: return nothing
     """
     state_user = get_full_state(message.from_user.id)
@@ -77,12 +77,25 @@ def next_back(message, back_to):
 
 
 def article_by(message, state_type, table, back_to, mess):
+    """
+    :param message: Message object with data about user, chat, etc type <class>
+    :param state_type: New user state type <str>
+    :param table: The Table from which data will be received type <str>
+    :param back_to: Section where the user will be returned type <str>
+    :param mess: Message to show to user type <str>
+    """
     bot.send_message(message.from_user.id, mess.format(message.text), parse_mode='markdown',
                      reply_markup=pre_modified_button(db.get_articles(table, message.text), back_to))
     change_state(message.from_user.id, state_type, '0:20', message.text)
 
 
 def article_choice(message, back_to, handler):
+    """
+    :param message: Message object with data about user, chat, etc type <class>
+    :param back_to: Section where the user will be returned type <str>
+    :param handler: Handler for return back type <func>
+    :return:
+    """
     if message.text == back_to:
         handler(message)
     else:
@@ -116,8 +129,6 @@ def helping_handler(message: telebot.types.Message):
     admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
     if message.from_user.id in admins_list:
         bot.send_message(message.from_user.id, helping_text, parse_mode='markdown')
-    else:
-        pass
 
 
 @bot.message_handler(commands=['global'])
@@ -134,8 +145,6 @@ def global_mailing(message: telebot.types.Message):
                     bot.send_message(user_id, text, parse_mode='HTML')
                 except Exception:
                     continue
-    else:
-        pass
 
 
 @bot.message_handler(commands=['downloadarticle'])
@@ -238,6 +247,11 @@ def all_list_articles(message: telebot.types.Message):
     else:
         article = db.get_article(message.text)
         bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
+
+
+@bot.message_handler(func=lambda message: check_section(message.from_user.id, state['ot']))
+def get_other_article(message: telebot.types.Message):
+    article_by(message, state['oc'], 'author', back_to_author, author_mes)
 # ********************************************************************************************
 # ********************************************************************************************
 
@@ -263,6 +277,26 @@ def all_articles_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, hello_all_mes, parse_mode='markdown',
                      reply_markup=pre_modified_button(db.get_articles('all'), first_level_back))
     change_state(message.from_user.id, state['al'], '0:20')
+
+
+"""
+This handler is under development
+States type: ot (other) and oc (other_choice - next level)
+Structure:
+   +---------+-------------+
+   |  Guest  |  Interview  |
+   +---------+-------------+
+   |   LIST  |     LIST    |
+   +---------+-------------+ 
+Next handler - get_other_article (under development). Location - 252 line at this file
+Database new structure:
+   in development... 
+"""
+@bot.message_handler(func=lambda x: x.text == 'Other. Гости, интервью, и многое другое')
+def other_articles_handler(message: telebot.types.Message):
+    bot.send_message(message.from_user.id, hello_other_mes, parse_mode='markdown',
+                     reply_markup=get_markup(other_section))
+    change_state(message.from_user.id, state['ot'])
 # ********************************************************************************************
 # ********************************************************************************************
 
