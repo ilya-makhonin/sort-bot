@@ -105,7 +105,7 @@ class SqlMethods:
                 cursor.execute('SELECT `id` FROM articles ORDER BY `id` DESC LIMIT 1;')
                 return cursor.fetchone()[0]
         except Exception as error:
-            logging = log.logger('sql', 'sql.log', log.LEVELS.get('WARNING'))
+            logging = log.logger('sql', './logs/sql.log', 'WARNING')
             logging.warning(error)
             return False
         finally:
