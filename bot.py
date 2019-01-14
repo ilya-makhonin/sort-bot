@@ -247,11 +247,6 @@ def all_list_articles(message: telebot.types.Message):
     else:
         article = db.get_article(message.text)
         bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
-
-
-@bot.message_handler(func=lambda message: check_section(message.from_user.id, state['ot']))
-def get_other_article(message: telebot.types.Message):
-    article_by(message, state['oc'], 'author', back_to_author, author_mes)
 # ********************************************************************************************
 # ********************************************************************************************
 
@@ -277,26 +272,6 @@ def all_articles_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, hello_all_mes, parse_mode='markdown',
                      reply_markup=pre_modified_button(db.get_articles('all'), first_level_back))
     change_state(message.from_user.id, state['al'], '0:20')
-
-
-"""
-This handler is under development
-States type: ot (other) and oc (other_choice - next level)
-Structure:
-   +---------+-------------+
-   |  Guest  |  Interview  |
-   +---------+-------------+
-   |   LIST  |     LIST    |
-   +---------+-------------+ 
-Next handler - get_other_article (under development). Location - 252 line at this file
-Database new structure:
-   in development... 
-"""
-@bot.message_handler(func=lambda x: x.text == 'Other. Гости, интервью, и многое другое')
-def other_articles_handler(message: telebot.types.Message):
-    bot.send_message(message.from_user.id, hello_other_mes, parse_mode='markdown',
-                     reply_markup=get_markup(other_section))
-    change_state(message.from_user.id, state['ot'])
 # ********************************************************************************************
 # ********************************************************************************************
 
@@ -330,6 +305,8 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
         telebot.logger.addHandler(log.__file_handler('./logs/bot.log', log.__get_formatter()))
 
     if not use_webhook:
+        bot.remove_webhook()
+        time.sleep(1)
         bot.polling(none_stop=True)
     elif args_check(['webhook_ip', 'webhook_port', 'token', 'ssl_cert'], webhook_data):
         bot.remove_webhook()
