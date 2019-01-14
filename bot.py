@@ -292,7 +292,7 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
 
     if logging_enable:
         telebot.logger.setLevel(logging.WARNING)
-        telebot.logger.addHandler(log.__file_handler('bot.log', log.__get_formatter()))
+        telebot.logger.addHandler(log.__file_handler('./logs/bot.log', log.__get_formatter()))
 
     if not use_webhook:
         bot.polling(none_stop=True)
