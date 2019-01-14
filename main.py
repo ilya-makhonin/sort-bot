@@ -9,7 +9,7 @@ def flask_init(bot_object):
     webhook_app = flask.Flask(__name__)
     webhook_logger = webhook_app.logger
     webhook_logger.setLevel(log.LEVELS.get('WARNING'))
-    webhook_logger.addHandler(log.__file_handler('flask.log', log.__get_formatter()))
+    webhook_logger.addHandler(log.__file_handler('./logs/flask.log', log.__get_formatter()))
 
     @webhook_app.route('/', methods=['GET', 'HEAD'])
     def index():
@@ -30,7 +30,7 @@ def flask_init(bot_object):
 
 
 def start(use_webhook=False, **webhook_data):
-    logger = log.logger('main', 'main.log', log.LEVELS.get('WARNING'))
+    logger = log.logger('main', './logs/main.log', 'WARNING')
     try:
         bot_object = bot.bot_start(webhook_data=webhook_data, use_webhook=use_webhook, logging_enable=True)
         if use_webhook:
