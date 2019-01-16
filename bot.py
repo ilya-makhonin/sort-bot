@@ -247,6 +247,19 @@ def all_list_articles(message: telebot.types.Message):
     else:
         article = db.get_article(message.text)
         bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
+
+
+@bot.message_handler(func=lambda message: check_section(message.from_user.id, state['ot']))
+def get_other_article(message: telebot.types.Message):
+    article_by(message, state['oc'], 'other', back_to_other, other_mes)
+
+
+@bot.message_handler(func=lambda message: check_section(message.from_user.id, state['oc']))
+def get_other_choice(message: telebot.types.Message):
+    if message.text == 'Далее' or message.text == 'Назад':
+        next_back(message, back_to_other)
+    else:
+        article_choice(message, back_to_other, other_articles_handler)
 # ********************************************************************************************
 # ********************************************************************************************
 
@@ -272,6 +285,13 @@ def all_articles_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, hello_all_mes, parse_mode='markdown',
                      reply_markup=pre_modified_button(db.get_articles('all'), first_level_back))
     change_state(message.from_user.id, state['al'], '0:20')
+
+
+@bot.message_handler(func=lambda x: x.text == 'Other. Гости, интервью, и многое другое')
+def other_articles_handler(message: telebot.types.Message):
+    bot.send_message(message.from_user.id, hello_other_mes, parse_mode='markdown',
+                     reply_markup=get_markup(other_section))
+    change_state(message.from_user.id, state['ot'])
 # ********************************************************************************************
 # ********************************************************************************************
 
