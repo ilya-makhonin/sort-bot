@@ -83,6 +83,8 @@ class SqlMethods:
                 elif condition == 'all':
                     cursor.execute('SELECT `name` FROM articles;')
                     result = cursor.fetchall()
+                elif condition == 'other':
+                    pass
                 return result
         finally:
             connection.close()
