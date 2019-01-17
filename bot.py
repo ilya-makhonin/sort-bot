@@ -154,30 +154,37 @@ def download_articles(message: telebot.types.Message):
         article = message.text[17:].split('|')   # like ['authors', 'themes', 'name', 'link']
         if len(article) < 4:
             bot.send_message(message.from_user.id, download_incorrect, parse_mode='HTML')
+        elif article[0].strip() == 'other':              # like ['other', 'section', 'themes', 'name', 'link']
+            section = article[1].strip()
+            themes = [(theme.replace('#', '')) for theme in article[1].split(', ')]
+            section_correct = db.check_author_or_section(section, other=True)
+            theme_correct = db.check_theme(themes)
+            if not section_correct or not theme_correct:
+                bot.send_message(message.from_user.id, other_incorrect.format(section_correct, theme_correct))
+                return
+            article_id = db.add_article(article[3].strip(), article[4].strip(), other=section_correct)
+            if not article_id:
+                bot.send_message(message.from_user.id, article_duplicate)
+                return
+            db.add_relation_to_article(None, theme_correct, article_id, other=True)
+            bot.send_message(message.from_user.id, download_success)
         else:
             # format authors string type <list> like ['Naize', ...]
             authors = [(author.replace('#', '')) for author in article[0].split(' ')]
             # format themes string type <list> like ['Frontend', ...]
-            themes = [(theme.replace('#', '')) for theme in article[1].split(' ')]
-
+            themes = [(theme.replace('#', '')) for theme in article[1].split(', ')]
             # Validation of input data (authors and themes)
-            author_correct = db.check_author(authors)       # return type <list> like [1, 2, 3]
+            author_correct = db.check_author_or_section(authors)       # return type <list> like [1, 2, 3]
             theme_correct = db.check_theme(themes)          # return type <list> like [<int>,...]
             if not author_correct or not theme_correct:
-                download_error = 'Отчёт:\n\n'
-                if not author_correct:
-                    download_error += author_error + '\n'
-                if not theme_correct:
-                    download_error += theme_error
-                bot.send_message(message.from_user.id, download_error)
-            else:
-                article_id = db.add_article(article[2].strip(), article[3].strip())   # get id of a article type <int>
-                if not article_id:
-                    bot.send_message(message.from_user.id,
-                                     'Статья с таким названием уже существует! Используйте другое название')
-                    return
-                db.add_relation_to_article(author_correct, theme_correct, article_id)   # set many to many relationship
-                bot.send_message(message.from_user.id, download_success)
+                bot.send_message(message.from_user.id, standart_incorrect.format(author_correct, theme_correct))
+                return
+            article_id = db.add_article(article[2].strip(), article[3].strip())   # get id of a article type <int>
+            if not article_id:
+                bot.send_message(message.from_user.id, article_duplicate)
+                return
+            db.add_relation_to_article(author_correct, theme_correct, article_id)   # set many to many relationship
+            bot.send_message(message.from_user.id, download_success)
 
 
 @bot.message_handler(commands=['downloadtheme'])
@@ -290,7 +297,7 @@ def all_articles_handler(message: telebot.types.Message):
 @bot.message_handler(func=lambda x: x.text == 'Other. Гости, интервью, и многое другое')
 def other_articles_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, hello_other_mes, parse_mode='markdown',
-                     reply_markup=get_markup(other_section))
+                     reply_markup=pre_modified_button(db.get_info_by_choice('other_content'), first_level_back))
     change_state(message.from_user.id, state['ot'])
 # ********************************************************************************************
 # ********************************************************************************************
