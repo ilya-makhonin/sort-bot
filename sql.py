@@ -109,7 +109,7 @@ class SqlMethods:
         try:
             with connection.cursor() as cursor:
                 if other != '':
-                    cursor.execute('INSERT INTO articles (`name`, `url`, `is_other`) VALUES (%s, %s);',
+                    cursor.execute('INSERT INTO articles (`name`, `url`, `is_other`) VALUES (%s, %s, %s);',
                                    (name, link, other))
                 else:
                     cursor.execute('INSERT INTO articles (`name`, `url`) VALUES (%s, %s);', (name, link))

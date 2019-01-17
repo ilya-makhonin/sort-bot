@@ -156,7 +156,7 @@ def download_articles(message: telebot.types.Message):
             bot.send_message(message.from_user.id, download_incorrect, parse_mode='HTML')
         elif article[0].strip() == 'other':              # like ['other', 'section', 'themes', 'name', 'link']
             section = article[1].strip()
-            themes = [(theme.replace('#', '')) for theme in article[1].split(', ')]
+            themes = [(theme.replace('#', '')) for theme in article[2].split(', ')]
             section_correct = db.check_author_or_section(section, other=True)
             theme_correct = db.check_theme(themes)
             if not section_correct or not theme_correct:
