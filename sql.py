@@ -3,6 +3,9 @@ from config import *
 import log
 
 
+logging = log.logger('sql', './logs/sql.log', 'WARNING')
+
+
 class SqlMethods:
     def __init__(self, remote=False):
         if not remote:
@@ -84,7 +87,10 @@ class SqlMethods:
                     cursor.execute('SELECT `name` FROM articles;')
                     result = cursor.fetchall()
                 elif condition == 'other':
-                    pass
+                    cursor.execute('SELECT articles.`name` FROM articles JOIN other_content ON '
+                                   'other_content.`id` = articles.is_other WHERE other_content.`id` = ('
+                                   'SELECT `id` FROM other_content WHERE content_type = %s);', flag)
+                    result = cursor.fetchall()
                 return result
         finally:
             connection.close()
@@ -98,34 +104,44 @@ class SqlMethods:
         finally:
             connection.close()
 
-    def add_article(self, name, link):
+    def add_article(self, name, link, other=''):
         connection = self.get_connection()
         try:
             with connection.cursor() as cursor:
-                cursor.execute('INSERT INTO articles (`name`, `url`) VALUES (%s, %s);', (name, link))
+                if other != '':
+                    cursor.execute('INSERT INTO articles (`name`, `url`, `is_other`) VALUES (%s, %s);',
+                                   (name, link, other))
+                else:
+                    cursor.execute('INSERT INTO articles (`name`, `url`) VALUES (%s, %s);', (name, link))
                 connection.commit()
                 cursor.execute('SELECT `id` FROM articles ORDER BY `id` DESC LIMIT 1;')
                 return cursor.fetchone()[0]
         except Exception as error:
-            logging = log.logger('sql', './logs/sql.log', 'WARNING')
             logging.warning(error)
             return False
         finally:
             connection.close()
 
-    def check_author(self, author_arr):
+    def check_author_or_section(self, data, other=False):
         connection = self.get_connection()
         try:
             with connection.cursor() as cursor:
+                if other:
+                    cursor.execute('SELECT `id`, content_type FROM other_content;')
+                    sections = cursor.fetchall()
+                    for section in sections:
+                        if section[1].lower() == data.lower():
+                            return section[0]
+                    return False
                 author_id = []
-                for author in author_arr:
+                for author in data:
                     cursor.execute('SELECT `id` FROM author WHERE `name` = %s;', (author.capitalize(),))
                     result = cursor.fetchone()
                     if result is None:
                         continue
                     else:
                         author_id.append(result[0])
-                if len(author_id) != len(author_arr):
+                if len(author_id) != len(data):
                     return False
                 else:
                     return author_id
@@ -150,13 +166,14 @@ class SqlMethods:
         finally:
             connection.close()
 
-    def add_relation_to_article(self, author_id, theme_id, article_id):
+    def add_relation_to_article(self, author_id, theme_id, article_id, other=False):
         connection = self.get_connection()
         try:
             with connection.cursor() as cursor:
-                for author in author_id:
-                    cursor.execute(
-                        'INSERT INTO author_article (author_id, article_id) VALUES (%s, %s)', (author, article_id))
+                if not other:
+                    for author in author_id:
+                        cursor.execute(
+                            'INSERT INTO author_article (author_id, article_id) VALUES (%s, %s)', (author, article_id))
                 connection.commit()
                 for theme in theme_id:
                     cursor.execute(
