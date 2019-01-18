@@ -1,5 +1,5 @@
 import telebot
-from sql import sql_method as db
+from sql import db
 from constants import *
 import config
 import time
@@ -9,6 +9,7 @@ from states import get_full_state, check_section, change_state
 
 
 bot = telebot.TeleBot(config.token)
+logger_bot = log.logger('bot', './logs/bot.log', 'WARNING')
 
 
 def get_markup(buttons, rows=1):
@@ -143,7 +144,8 @@ def global_mailing(message: telebot.types.Message):
             for user_id in users_id:
                 try:
                     bot.send_message(user_id, text, parse_mode='HTML')
-                except Exception:
+                except Exception as error:
+                    logger_bot.warning(error)
                     continue
 
 
@@ -177,7 +179,7 @@ def download_articles(message: telebot.types.Message):
             author_correct = db.check_author_or_section(authors)       # return type <list> like [1, 2, 3]
             theme_correct = db.check_theme(themes)          # return type <list> like [<int>,...]
             if not author_correct or not theme_correct:
-                bot.send_message(message.from_user.id, standart_incorrect.format(author_correct, theme_correct))
+                bot.send_message(message.from_user.id, stand_incorrect.format(author_correct, theme_correct))
                 return
             article_id = db.add_article(article[2].strip(), article[3].strip())   # get id of a article type <int>
             if not article_id:
@@ -210,7 +212,6 @@ def download_theme(message: telebot.types.Message):
 @bot.message_handler(func=lambda message: message.text == first_level_back)
 def back_to_main_menu(message: telebot.types.Message):
     change_state(message.from_user.id, state['st'])
-    bot.send_message(message.from_user.id, 'Come back, bro!', reply_markup=telebot.types.ReplyKeyboardRemove())
     bot.send_message(message.from_user.id, start_message, parse_mode='markdown', reply_markup=get_markup(main_menu))
 # *********************************************************************************************
 # *********************************************************************************************
@@ -316,10 +317,9 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
 
     def set_webhook(url, cert):
         try:
-            # telebot.apihelper.set_webhook(config.token, url=url, certificate=cert)
             bot.set_webhook(url=url, certificate=cert)
         except Exception as err:
-            print(err.with_traceback(None))
+            logger_bot.error(err)
 
     def args_check(args_names, checking_kwargs):
         for arg in args_names:
@@ -346,4 +346,5 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
             cert=open(webhook_data.get('ssl_cert'), 'r'))
         return bot
     else:
+        logger_bot.error('Params for start with webhook is not specified')
         raise Exception('Params for start with webhook is not specified')
