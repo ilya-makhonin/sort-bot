@@ -3,21 +3,15 @@ from config import *
 import log
 
 
-logging = log.logger('sql', './logs/sql.log', 'WARNING')
+logger_sql = log.logger('sql', './logs/sql.log', 'WARNING')
 
 
 class SqlMethods:
-    def __init__(self, remote=False):
-        if not remote:
-            self.host = 'localhost'
-            self.user = 'root'
-            self.password = '123456'
-            self.db = 'it_root_articles'
-        else:
-            self.host = HOST
-            self.user = USER
-            self.password = PASS
-            self.db = DB
+    def __init__(self):
+        self.host = HOST
+        self.user = USER
+        self.password = PASS
+        self.db = DB
 
     def get_connection(self):
         connection = pymysql.connections.Connection(
@@ -117,7 +111,7 @@ class SqlMethods:
                 cursor.execute('SELECT `id` FROM articles ORDER BY `id` DESC LIMIT 1;')
                 return cursor.fetchone()[0]
         except Exception as error:
-            logging.warning(error)
+            logger_sql.warning(error)
             return False
         finally:
             connection.close()
@@ -143,8 +137,7 @@ class SqlMethods:
                         author_id.append(result[0])
                 if len(author_id) != len(data):
                     return False
-                else:
-                    return author_id
+                return author_id
         finally:
             connection.close()
 
@@ -161,8 +154,7 @@ class SqlMethods:
                             theme_id.append(i[0])
                 if len(theme_id) != len(theme_arr):
                     return False
-                else:
-                    return theme_id
+                return theme_id
         finally:
             connection.close()
 
@@ -199,4 +191,4 @@ class SqlMethods:
             connection.close()
 
 
-sql_method = SqlMethods(remote=True)
+db = SqlMethods()
