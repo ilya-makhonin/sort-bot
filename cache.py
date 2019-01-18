@@ -1,4 +1,4 @@
-from sql import sql_method as db
+from sql import db
 
 
 class Cache:

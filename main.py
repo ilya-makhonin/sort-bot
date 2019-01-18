@@ -25,7 +25,6 @@ def flask_init(bot_object):
         else:
             webhook_logger.warning('Abort 403')
             flask.abort(403)
-
     return webhook_app
 
 
