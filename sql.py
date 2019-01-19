@@ -3,15 +3,13 @@ from config import *
 import log
 
 
-logger_sql = log.logger('sql', './logs/sql.log', 'WARNING')
-
-
 class SqlMethods:
     def __init__(self):
         self.host = HOST
         self.user = USER
         self.password = PASS
         self.db = DB
+        self.logger = log.logger('sql', './logs/sql.log', 'WARNING')
 
     def get_connection(self):
         connection = pymysql.connections.Connection(
@@ -54,8 +52,7 @@ class SqlMethods:
         connection = self.get_connection()
         try:
             with connection.cursor() as cursor:
-                sql = "SELECT * FROM {};".format(type_table)
-                cursor.execute(sql)
+                cursor.execute("SELECT * FROM {};".format(type_table))
                 return cursor.fetchall()
         finally:
             connection.close()
@@ -103,15 +100,15 @@ class SqlMethods:
         try:
             with connection.cursor() as cursor:
                 if other != '':
-                    cursor.execute('INSERT INTO articles (`name`, `url`, `is_other`) VALUES (%s, %s, %s);',
-                                   (name, link, other))
+                    cursor.execute(
+                        'INSERT INTO articles (`name`, `url`, `is_other`) VALUES (%s, %s, %s);', (name, link, other))
                 else:
                     cursor.execute('INSERT INTO articles (`name`, `url`) VALUES (%s, %s);', (name, link))
                 connection.commit()
                 cursor.execute('SELECT `id` FROM articles ORDER BY `id` DESC LIMIT 1;')
                 return cursor.fetchone()[0]
         except Exception as error:
-            logger_sql.warning(error)
+            self.logger.warning(error)
             return False
         finally:
             connection.close()
@@ -133,8 +130,7 @@ class SqlMethods:
                     result = cursor.fetchone()
                     if result is None:
                         continue
-                    else:
-                        author_id.append(result[0])
+                    author_id.append(result[0])
                 if len(author_id) != len(data):
                     return False
                 return author_id
@@ -148,10 +144,10 @@ class SqlMethods:
                 theme_id = []
                 cursor.execute('SELECT `id`, theme_name FROM theme;')
                 result = cursor.fetchall()
-                for j in theme_arr:
-                    for i in result:
-                        if j.lower() == i[1].lower():
-                            theme_id.append(i[0])
+                for theme in theme_arr:
+                    for theme_from_db in result:
+                        if theme.lower() == theme_from_db[1].lower():
+                            theme_id.append(theme_from_db[0])
                 if len(theme_id) != len(theme_arr):
                     return False
                 return theme_id
