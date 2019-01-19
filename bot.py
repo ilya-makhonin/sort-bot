@@ -125,17 +125,20 @@ def help_handler(message: telebot.types.Message):
 
 # **************************************** Admin panel ****************************************
 # *********************************************************************************************
+def check_admin(message):
+    admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
+    return message.from_user.id in admins_list
+
+
 @bot.message_handler(commands=['helping'])
 def helping_handler(message: telebot.types.Message):
-    admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
-    if message.from_user.id in admins_list:
+    if check_admin(message):
         bot.send_message(message.from_user.id, helping_text, parse_mode='markdown')
 
 
 @bot.message_handler(commands=['global'])
 def global_mailing(message: telebot.types.Message):
-    admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
-    if message.from_user.id in admins_list:
+    if check_admin(message):
         text = message.text[8:].strip()
         if text == '':
             bot.send_message(message.from_user.id, 'Вы не ввели текст рассылки!')
@@ -151,8 +154,7 @@ def global_mailing(message: telebot.types.Message):
 
 @bot.message_handler(commands=['downloadarticle'])
 def download_articles(message: telebot.types.Message):
-    admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
-    if message.from_user.id in admins_list:
+    if check_admin(message):
         article = message.text[17:].split('|')   # like ['authors', 'themes', 'name', 'link']
         if len(article) < 4:
             bot.send_message(message.from_user.id, download_incorrect, parse_mode='HTML')
@@ -171,11 +173,8 @@ def download_articles(message: telebot.types.Message):
             db.add_relation_to_article(None, theme_correct, article_id, other=True)
             bot.send_message(message.from_user.id, download_success)
         else:
-            # format authors string type <list> like ['Naize', ...]
             authors = [(author.replace('#', '')) for author in article[0].split(' ')]
-            # format themes string type <list> like ['Frontend', ...]
             themes = [(theme.replace('#', '')) for theme in article[1].split(', ')]
-            # Validation of input data (authors and themes)
             author_correct = db.check_author_or_section(authors)       # return type <list> like [1, 2, 3]
             theme_correct = db.check_theme(themes)          # return type <list> like [<int>,...]
             if not author_correct or not theme_correct:
@@ -191,8 +190,7 @@ def download_articles(message: telebot.types.Message):
 
 @bot.message_handler(commands=['downloadtheme'])
 def download_theme(message: telebot.types.Message):
-    admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
-    if message.from_user.id in admins_list:
+    if check_admin(message):
         theme_name = (message.text[15:].replace('#', '')).strip()
         if theme_name == '':
             bot.send_message(message.from_user.id, 'Вы не ввели тему!')
@@ -200,9 +198,9 @@ def download_theme(message: telebot.types.Message):
             result = db.add_theme(theme_name)
             if not result:
                 bot.send_message(message.from_user.id, 'Данная тема уже существует!')
-            else:
-                bot.send_message(message.from_user.id, 'Тема *{}* успешно добавленна!'.format(theme_name),
-                                 parse_mode='markdown')
+                return
+            bot.send_message(
+                message.from_user.id, 'Тема *{}* успешно добавленна!'.format(theme_name), parse_mode='markdown')
 # *********************************************************************************************
 # *********************************************************************************************
 
