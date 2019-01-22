@@ -1,7 +1,7 @@
 import telebot
 from sql import db
 from constants import *
-from cache import Cache
+# from cache import Cache
 import config
 import time
 import log
@@ -10,8 +10,8 @@ from states import get_full_state, check_section, change_state
 
 
 bot = telebot.TeleBot(config.token)
-cache = Cache()
 logger_bot = log.logger('bot', './logs/bot.log', 'WARNING')
+# cache = Cache()
 
 
 def get_markup(buttons, rows=1):
