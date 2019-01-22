@@ -9,7 +9,7 @@ help_mes = 'В этом боте собраны статьи с канала *IT
 
 helping_text = 'Список админских команд в боте:\n\n/global - глобальная рассылка (*/global <текст рассылки>*)' \
                '\n\n/downloadarticle - добавление своей статьи в БД ' \
-               '(*/downloadarticle авторы|темы|название|ссылка*)\n\n' \
+               '(*/downloadarticle авторы|темы|название|ссылка* или *other|section|theme|name|link*)\n\n' \
                '/downloadtheme - добавление темы в БД (*/downloadtheme <название темы>*)'
 
 hello_author_mes = 'Хорошо!\n\nВыбирай, чьи статьи ты хочешь читать: Naize, Valter или Fox'
