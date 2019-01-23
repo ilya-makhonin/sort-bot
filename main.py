@@ -8,7 +8,7 @@ import log
 def flask_init(bot_object):
     webhook_app = flask.Flask(__name__)
     webhook_logger = webhook_app.logger
-    # webhook_logger.setLevel(log.LEVELS.get('WARNING'))
+    webhook_logger.setLevel(log.LEVELS.get('WARNING'))
     webhook_logger.addHandler(log.__file_handler('./logs/flask.log', log.__get_formatter()))
 
     @webhook_app.route('/', methods=['GET', 'HEAD'])
