@@ -11,20 +11,8 @@ class Cache:
     Will add multiprocessing or threading for download cache data to DB (three times a day)
     """
     def __init__(self):
-        self.cache = {
-            'users': tuple,
-            'author': tuple,
-            'theme': tuple,
-            'level': tuple
-        }
         # Temporary storage for states of users
-        self.cache_state = dict
-
-    def get_db_information(self):
-        self.cache['users'] = db.get_info_by_choice('users')
-        self.cache['author'] = db.get_info_by_choice('author')
-        self.cache['theme'] = db.get_info_by_choice('theme')
-        self.cache['level'] = db.get_info_by_choice('level')
+        self.cache_state = dict()
 
     def get_state_from_db(self):
         connection = db.get_connection()
@@ -39,7 +27,16 @@ class Cache:
             connection.close()
 
     def set_state_to_db(self):
-        pass
+        connection = db.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                for user, state in self.cache_state.items():
+                    cursor.execute('UPDATE users SET state = %s WHERE user_id = %s', (state, user))
+                connection.commit()
+        except Exception as error:
+            db.logger.error(error)
+        finally:
+            connection.close()
 
     def get_state(self, user_id):
         pass
