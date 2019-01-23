@@ -203,6 +203,14 @@ def download_theme(message: telebot.types.Message):
                 return
             bot.send_message(
                 message.from_user.id, 'Тема *{}* успешно добавленна!'.format(theme_name), parse_mode='markdown')
+
+
+@bot.message_handler(commands=['userscount'])
+def count_handler(message: telebot.types.Message):
+    if check_admin(message):
+        count = db.get_user_count()
+        text = 'На данный момент ботом пользуются {} человек'.format(count)
+        bot.send_message(message.from_user.id, text)
 # *********************************************************************************************
 # *********************************************************************************************
 
