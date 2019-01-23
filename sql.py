@@ -186,5 +186,14 @@ class SqlMethods:
         finally:
             connection.close()
 
+    def get_user_count(self):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT COUNT(0) FROM users;')
+                return cursor.fetchone()[0]
+        finally:
+            connection.close()
+
 
 db = SqlMethods()
