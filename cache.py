@@ -31,7 +31,7 @@ class Cache:
         try:
             with connection.cursor() as cursor:
                 for user, state in self.cache_state.items():
-                    cursor.execute('UPDATE users SET state = %s WHERE user_id = %s', (state, user))
+                    cursor.execute('UPDATE users SET state = %s WHERE user_id = %s;', (state, user))
                 connection.commit()
         except Exception as error:
             db.logger.error(error)
@@ -39,7 +39,20 @@ class Cache:
             connection.close()
 
     def get_state(self, user_id):
-        pass
+        try:
+            return self.cache_state.get(user_id)
+        except IndexError:
+            connection = db.get_connection()
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute('SELECT state FROM users WHERE user_id = %s;', (user_id,))
+                    new_state = cursor.fetchone()[0]
+                    self.cache_state.update([user_id, new_state])
+                    return new_state
+            except Exception as error:
+                print(error)
+            finally:
+                connection.close()
 
     def set_state(self, user_id):
         pass
