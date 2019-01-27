@@ -22,6 +22,10 @@ class SqlMethods:
             with connection.cursor() as cursor:
                 cursor.execute('SELECT * FROM users WHERE user_id = %s', (user_id,))
                 if cursor.fetchone() is None:
+                    if username is not None and len(username) > 35:
+                        username = username[0:35]
+                    if name is not None and len(name) > 100:
+                        name = name[0:100]
                     cursor.execute('INSERT INTO `users` (user_id, username, name) VALUES (%s, %s, %s);',
                                    (user_id, username, name))
                 else:
