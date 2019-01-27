@@ -143,13 +143,16 @@ def global_mailing(message: telebot.types.Message):
         if text == '':
             bot.send_message(message.from_user.id, 'Вы не ввели текст рассылки!')
         else:
+            counter_deleted_users = 0
             users_id = [user[1] for user in db.get_info_by_choice('users')]
             for user_id in users_id:
                 try:
                     bot.send_message(user_id, text, parse_mode='HTML')
                 except Exception as error:
+                    counter_deleted_users += 1
                     logger_bot.warning(error)
                     continue
+            bot.send_message(message.from_user.id, 'Удалённых пользователей {}'.format(counter_deleted_users))
 
 
 @bot.message_handler(commands=['downloadarticle'])
