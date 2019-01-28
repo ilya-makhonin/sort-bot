@@ -1,6 +1,4 @@
 from sql import db
-import threading
-import multiprocessing
 
 
 class Cache:
