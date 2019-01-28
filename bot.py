@@ -163,7 +163,7 @@ def download_articles(message: telebot.types.Message):
             bot.send_message(message.from_user.id, download_incorrect, parse_mode='HTML')
         elif article[0].strip() == 'other':              # like ['other', 'section', 'themes', 'name', 'link']
             section = article[1].strip()
-            themes = [(theme.replace('#', '')) for theme in article[2].split(', ')]
+            themes = [(theme.replace('#', '')).strip() for theme in article[2].split(', ')]
             section_correct = db.check_author_or_section(section, other=True)
             theme_correct = db.check_theme(themes)
             if not section_correct or not theme_correct:
@@ -176,8 +176,8 @@ def download_articles(message: telebot.types.Message):
             db.add_relation_to_article(None, theme_correct, article_id, other=True)
             bot.send_message(message.from_user.id, download_success)
         else:
-            authors = [(author.replace('#', '')) for author in article[0].split(' ')]
-            themes = [(theme.replace('#', '')) for theme in article[1].split(', ')]
+            authors = [(author.replace('#', '')).strip() for author in article[0].split(' ')]
+            themes = [(theme.replace('#', '')).strip() for theme in article[1].split(', ')]
             author_correct = db.check_author_or_section(authors)       # return type <list> like [1, 2, 3]
             theme_correct = db.check_theme(themes)          # return type <list> like [<int>,...]
             if not author_correct or not theme_correct:
