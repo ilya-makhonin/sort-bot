@@ -44,4 +44,7 @@ def start(use_webhook=False, **webhook_data):
 app = start(use_webhook=True, webhook_ip=WEBHOOK_HOST, webhook_port=WEBHOOK_PORT, token=token, ssl_cert=SSL_SERT)
 
 if __name__ == '__main__':
-    app.run(host=WEBHOOK_LISTEN, port=WEBHOOK_PORT, ssl_context=(SSL_SERT, SSL_POM))
+    try:
+        app.run(host=WEBHOOK_LISTEN, port=WEBHOOK_PORT, ssl_context=(SSL_SERT, SSL_POM))
+    except TypeError as error:
+        print(error)
