@@ -3,6 +3,27 @@ import bot
 import flask
 from config import *
 import log
+from cache import cache
+from time import sleep
+import threading
+
+
+logger_main = log.logger('main', './logs/main.log', 'WARNING')
+
+
+def update_states(timeout=43200):
+    """
+    This function is updating states of users
+    :param timeout: how often update states of users in db
+    :return: nothing
+    """
+    try:
+        while True:
+            sleep(timeout)
+            cache.update_cache()
+    except Exception as err:
+        logger_main.error(err)
+        print(err)
 
 
 def flask_init(bot_object):
@@ -29,7 +50,6 @@ def flask_init(bot_object):
 
 
 def start(use_webhook=False, **webhook_data):
-    logger = log.logger('main', './logs/main.log', 'WARNING')
     try:
         bot_object = bot.bot_start(webhook_data=webhook_data, use_webhook=use_webhook, logging_enable=True)
         if use_webhook:
@@ -37,14 +57,22 @@ def start(use_webhook=False, **webhook_data):
             return server
         return None
     except Exception as err:
-        logger.exception('bot crashed')
-        logger.exception(err)
+        logger_main.exception('bot crashed')
+        logger_main.exception(err)
 
 
 app = start(use_webhook=True, webhook_ip=WEBHOOK_HOST, webhook_port=WEBHOOK_PORT, token=token, ssl_cert=SSL_SERT)
 
 if __name__ == '__main__':
+    """
+    Create and start the new Thread - thread. Then the app is running
+    """
     try:
+        thread = threading.Thread(target=update_states, args=[])
+        thread.setDaemon(True)
+        thread.start()
+
         app.run(host=WEBHOOK_LISTEN, port=WEBHOOK_PORT, ssl_context=(SSL_SERT, SSL_POM))
-    except TypeError as error:
+    except Exception as error:
+        logger_main.error(error)
         print(error)
