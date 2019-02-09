@@ -34,7 +34,7 @@ class Cache:
                     cursor.execute('UPDATE users SET state = %s WHERE user_id = %s;', (state, user))
                 connection.commit()
         except Exception as error:
-            db.logger.error(error)
+            db.logger.warning(error)
         finally:
             connection.close()
 
@@ -55,7 +55,7 @@ class Cache:
                     self.cache_state.update({user_id: new_state})
                     return new_state
             except TypeError as type_error:
-                db.logger.error(type_error)
+                db.logger.warning(type_error)
                 return False
             finally:
                 connection.close()
@@ -89,4 +89,4 @@ class Cache:
 
 
 # Initial class instance with disabling lazy loading
-cache = Cache(lazy_loading=False)
+cache = Cache(lazy_loading=True)
