@@ -22,15 +22,17 @@ def update_states(timeout=43200):
             sleep(timeout)
             cache.update_cache()
     except Exception as err:
-        logger_main.error(err)
+        logger_main.warning(err)
         print(err)
 
 
 def flask_init(bot_object):
     webhook_app = flask.Flask(__name__)
+    """
     webhook_logger = webhook_app.logger
     webhook_logger.setLevel(log.LEVELS.get('WARNING'))
     webhook_logger.addHandler(log.__file_handler('./logs/flask.log', log.__get_formatter()))
+    """
 
     @webhook_app.route('/', methods=['GET', 'HEAD'])
     def index():
@@ -44,7 +46,8 @@ def flask_init(bot_object):
             bot_object.process_new_updates([update])
             return ''
         else:
-            webhook_logger.warning('Abort 403')
+            # webhook_logger.warning('Abort 403')
+            logger_main.warning('Abort 403')
             flask.abort(403)
     return webhook_app
 
@@ -57,8 +60,8 @@ def start(use_webhook=False, **webhook_data):
             return server
         return None
     except Exception as err:
-        logger_main.exception('bot crashed')
-        logger_main.exception(err)
+        logger_main.warning('bot crashed')
+        logger_main.warning(err)
 
 
 app = start(use_webhook=True, webhook_ip=WEBHOOK_HOST, webhook_port=WEBHOOK_PORT, token=token, ssl_cert=SSL_SERT)
@@ -74,5 +77,5 @@ if __name__ == '__main__':
 
         app.run(host=WEBHOOK_LISTEN, port=WEBHOOK_PORT, ssl_context=(SSL_SERT, SSL_POM))
     except Exception as error:
-        logger_main.error(error)
+        logger_main.warning(error)
         print(error)
