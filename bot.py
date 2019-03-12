@@ -73,7 +73,6 @@ def article_choice(message, back_to, handler):
 
 
 # *************************************** Start handler ***************************************
-# *********************************************************************************************
 @bot.message_handler(commands=['start'])
 def start_handler(message: telebot.types.Message):
     name = message.from_user.first_name
@@ -88,11 +87,9 @@ def start_handler(message: telebot.types.Message):
 def help_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, help_mes, parse_mode='markdown', reply_markup=get_markup(main_menu))
 # *********************************************************************************************
-# *********************************************************************************************
 
 
 # **************************************** Admin panel ****************************************
-# *********************************************************************************************
 def check_admin(message):
     admins_list = [admin[1] for admin in db.get_info_by_choice('author')]
     return message.from_user.id in admins_list
@@ -181,21 +178,17 @@ def count_handler(message: telebot.types.Message):
         text = 'На данный момент ботом пользуются {} человек'.format(count)
         bot.send_message(message.from_user.id, text)
 # *********************************************************************************************
-# *********************************************************************************************
 
 
 # *********** Back to main menu (Article by author, Article by theme, All articles) ***********
-# *********************************************************************************************
 @bot.message_handler(func=lambda message: message.text == first_level_back)
 def back_to_main_menu(message: telebot.types.Message):
     change_state(message.from_user.id, state['st'])
     bot.send_message(message.from_user.id, start_message, parse_mode='markdown', reply_markup=get_markup(main_menu))
 # *********************************************************************************************
-# *********************************************************************************************
 
 
 # *************************************** Get by state ***************************************
-# ********************************************************************************************
 @bot.message_handler(func=lambda message: check_section(message.from_user.id, state['at']))
 def author_list_articles(message: telebot.types.Message):
     article_by(message, state['ac'], 'author', back_to_author, author_mes)
@@ -245,12 +238,19 @@ def get_other_choice(message: telebot.types.Message):
         next_back(message, back_to_other)
     else:
         article_choice(message, back_to_other, other_articles_handler)
-# ********************************************************************************************
+
+
+@bot.message_handler(func=lambda message: check_section(message.from_user.id, state['cr']))
+def all_list_articles(message: telebot.types.Message):
+    if message.text == 'Далее' or message.text == 'Назад':
+        next_back(message, first_level_back)
+    else:
+        article = db.get_article(message.text)
+        bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
 # ********************************************************************************************
 
 
 # ************************************* Section handlers *************************************
-# ********************************************************************************************
 @bot.message_handler(func=lambda x: x.text == 'По авторам')
 def author_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, hello_author_mes, parse_mode='markdown',
@@ -277,12 +277,17 @@ def other_articles_handler(message: telebot.types.Message):
     bot.send_message(message.from_user.id, hello_other_mes, parse_mode='markdown',
                      reply_markup=pre_modified_button(db.get_info_by_choice('other_content'), first_level_back))
     change_state(message.from_user.id, state['ot'])
-# ********************************************************************************************
+
+
+@bot.message_handler(func=lambda x: x.text == 'Курсы по разработке')
+def courses_handler(message: telebot.types.Message):
+    bot.send_message(message.from_user.id, hello_courses_mes, parse_mode='markdown',
+                     reply_markup=pre_modified_button(db.get_info_by_choice('courses'), first_level_back))
+    change_state(message.from_user.id, state['cr'])
 # ********************************************************************************************
 
 
 # ************************************ Bot start function *************************************
-# *********************************************************************************************
 def bot_start(webhook_data, use_webhook=False, logging_enable=False):
     """
     :param webhook_data: data for deploy type <dict>
