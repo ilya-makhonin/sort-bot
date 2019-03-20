@@ -4,7 +4,8 @@ LEVELS = {
     'DEBUG': logging.DEBUG,
     'CRITICAL': logging.CRITICAL,
     'INFO': logging.INFO,
-    'WARNING': logging.WARNING
+    'WARNING': logging.WARNING,
+    'ERROR': logging.ERROR
 }
 
 
