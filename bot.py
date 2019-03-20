@@ -2,7 +2,7 @@ import telebot
 from sql import db
 from constants import *
 import config
-import time
+from time import sleep
 import log
 import logging
 from states import get_full_state, check_section, change_state
@@ -115,7 +115,7 @@ def global_mailing(message: telebot.types.Message):
                     bot.send_message(user_id, text, parse_mode='HTML')
                 except Exception as error:
                     counter_deleted_users += 1
-                    logger_bot.warning(error)
+                    logger_bot.warning(error.with_traceback(None))
                     continue
             bot.send_message(message.from_user.id, 'Удалённых пользователей {}'.format(counter_deleted_users))
 
@@ -288,11 +288,11 @@ def courses_handler(message: telebot.types.Message):
 
 
 # ************************************ Bot start function *************************************
-def bot_start(webhook_data, use_webhook=False, logging_enable=False):
+def bot_start(webhook_data: dict, use_webhook: bool, logging_enable: bool):
     """
     :param webhook_data: data for deploy type <dict>
-    :param use_webhook: type <bul>
-    :param logging_enable: type <bul>
+    :param use_webhook: type <bool>
+    :param logging_enable: type <bool>
     :return: bot object
     """
     global bot
@@ -301,7 +301,8 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
         try:
             bot.set_webhook(url=url, certificate=cert)
         except Exception as err:
-            logger_bot.error(err)
+            logger_bot.error(err.with_traceback(None))
+            raise Exception('Error for setting bot web hooks')
 
     def args_check(args_names, checking_kwargs):
         for arg in args_names:
@@ -314,12 +315,10 @@ def bot_start(webhook_data, use_webhook=False, logging_enable=False):
         telebot.logger.addHandler(log.__file_handler('./logs/bot.log', log.__get_formatter()))
 
     if not use_webhook:
-        bot.remove_webhook()
-        time.sleep(1)
-        bot.polling(none_stop=True)
+        return bot
     elif args_check(['webhook_ip', 'webhook_port', 'token', 'ssl_cert'], webhook_data):
         bot.remove_webhook()
-        time.sleep(1)
+        sleep(1)
         set_webhook(
             url='https://%s:%s/%s/' % (
                 webhook_data.get('webhook_ip'),
