@@ -89,4 +89,4 @@ class Cache:
 
 
 # Initial class instance with disabling lazy loading
-cache = Cache(lazy_loading=True)
+# cache = Cache(lazy_loading=True)
