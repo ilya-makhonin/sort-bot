@@ -3,7 +3,7 @@ import bot
 import flask
 from config import *
 import log
-from cache import cache
+# from cache import cache
 from time import sleep
 import threading
 
@@ -14,25 +14,20 @@ logger_main = log.logger('main', './logs/main.log', 'WARNING')
 def update_states(timeout=43200):
     """
     This function is updating states of users
-    :param timeout: how often update states of users in db
+    :param timeout: type <int> - how often update states of users in db
     :return: nothing
     """
     try:
         while True:
             sleep(timeout)
-            cache.update_cache()
+            # cache.update_cache()
     except Exception as err:
-        logger_main.warning(err)
+        logger_main.warning(err.with_traceback(None))
         print(err)
 
 
 def flask_init(bot_object):
     webhook_app = flask.Flask(__name__)
-    """
-    webhook_logger = webhook_app.logger
-    webhook_logger.setLevel(log.LEVELS.get('WARNING'))
-    webhook_logger.addHandler(log.__file_handler('./logs/flask.log', log.__get_formatter()))
-    """
 
     @webhook_app.route('/', methods=['GET', 'HEAD'])
     def index():
@@ -46,36 +41,46 @@ def flask_init(bot_object):
             bot_object.process_new_updates([update])
             return ''
         else:
-            # webhook_logger.warning('Abort 403')
             logger_main.warning('Abort 403')
             flask.abort(403)
     return webhook_app
 
 
-def start(use_webhook=False, **webhook_data):
+def start_server(use_webhook: bool, logging_enable: bool, **webhook_data):
     try:
-        bot_object = bot.bot_start(webhook_data=webhook_data, use_webhook=use_webhook, logging_enable=True)
+        bot_ = bot.bot_start(webhook_data, use_webhook, logging_enable)
         if use_webhook:
-            server = flask_init(bot_object)
-            return server
-        return None
+            server = flask_init(bot_)
+            server.run(host=WEBHOOK_LISTEN, port=WEBHOOK_PORT, ssl_context=(SSL_SERT, SSL_POM))
+        else:
+            bot_.remove_webhook()
+            sleep(1)
+            bot_.polling(none_stop=True)
     except Exception as err:
         logger_main.warning('bot crashed')
-        logger_main.warning(err)
+        logger_main.warning(err.with_traceback(None))
 
 
-app = start(use_webhook=True, webhook_ip=WEBHOOK_HOST, webhook_port=WEBHOOK_PORT, token=token, ssl_cert=SSL_SERT)
-
-if __name__ == '__main__':
+def main(use_webhook=False, with_cache=False, logging_enable=True):
     """
-    Create and start the new Thread - thread. Then the app is running
+    if with_cache equal True - create and start a new Thread - thread. Then the app will be running
     """
-    try:
+    if with_cache:
         thread = threading.Thread(target=update_states, args=[])
         thread.setDaemon(True)
         thread.start()
+    start_server(
+        use_webhook,
+        logging_enable,
+        webhook_ip=WEBHOOK_HOST,
+        webhook_port=WEBHOOK_PORT,
+        token=token,
+        ssl_cert=SSL_SERT)
 
-        app.run(host=WEBHOOK_LISTEN, port=WEBHOOK_PORT, ssl_context=(SSL_SERT, SSL_POM))
+
+if __name__ == '__main__':
+    try:
+        main()
     except Exception as error:
-        logger_main.warning(error)
+        logger_main.warning(error.with_traceback(None))
         print(error)
