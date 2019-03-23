@@ -82,7 +82,7 @@ class SqlMethods:
                     cursor.execute('SELECT `name` FROM articles;')
                     result = cursor.fetchall()
                 elif condition == 'other':
-                    cursor.execute('SELECT articles.`name` FROM articles JOIN other_content ON '
+                    cursor.execute('SELECT `name` FROM articles JOIN other_content ON '
                                    'other_content.`id` = articles.is_other WHERE other_content.`id` = ('
                                    'SELECT `id` FROM other_content WHERE content_type = %s);', flag)
                     result = cursor.fetchall()
@@ -96,6 +96,15 @@ class SqlMethods:
             with connection.cursor() as cursor:
                 cursor.execute('SELECT `name`, `url` FROM articles WHERE `name` = %s;', (name,))
                 return cursor.fetchone() or ['Упс!', 'Такой статьи не существует!']
+        finally:
+            connection.close()
+
+    def get_course(self, name):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT `name`, `about` FROM courses WHERE `name` = %s;', (name,))
+                return cursor.fetchone() or ['Упс!', 'Такого курса не существует!']
         finally:
             connection.close()
 
