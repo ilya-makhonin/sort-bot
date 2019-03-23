@@ -1,4 +1,5 @@
 import logging
+import os
 
 LEVELS = {
     'DEBUG': logging.DEBUG,
@@ -14,9 +15,11 @@ def __get_formatter():
 
 
 def __file_handler(file_name, formatter):
-    handler = logging.FileHandler(file_name)
-    handler.setFormatter(formatter)
-    return handler
+    if not os.path.exists('logs/'):
+        os.mkdir('./logs/')
+    _handler = logging.FileHandler(file_name)
+    _handler.setFormatter(formatter)
+    return _handler
 
 
 def logger(name, file_name, log_level='DEBUG'):
@@ -26,9 +29,11 @@ def logger(name, file_name, log_level='DEBUG'):
     :param log_level: type logging type <str>
     :return: logger object
     """
-    logger = logging.getLogger(name)
-    logger.setLevel(LEVELS.get(log_level))
+    if not os.path.exists('logs/'):
+        os.mkdir('./logs/')
+    _logger = logging.getLogger(name)
+    _logger.setLevel(LEVELS.get(log_level))
     formatter = __get_formatter()
     handler = __file_handler(file_name, formatter)
-    logger.addHandler(handler)
-    return logger
+    _logger.addHandler(handler)
+    return _logger
