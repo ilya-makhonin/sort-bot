@@ -3,7 +3,7 @@ import bot
 import flask
 from config import *
 import log
-# from cache import cache
+from states import states as s
 from time import sleep
 import threading
 
@@ -20,7 +20,7 @@ def update_states(timeout=43200):
     try:
         while True:
             sleep(timeout)
-            # cache.update_cache()
+            s.get_cache_instance().update_cache()
     except Exception as err:
         logger_main.warning(err.with_traceback(None))
         print(err)
