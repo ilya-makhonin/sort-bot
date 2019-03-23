@@ -9,7 +9,7 @@ class SqlMethods:
         self.user = USER
         self.password = PASS
         self.db = DB
-        self.logger = log.logger('sql', './logs/sql.log', 'WARNING')
+        self.logger = log.logger('sql', 'sql.log', 'WARNING')
 
     def get_connection(self):
         connection = pymysql.connections.Connection(

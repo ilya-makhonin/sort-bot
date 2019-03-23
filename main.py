@@ -8,7 +8,7 @@ from time import sleep
 import threading
 
 
-logger_main = log.logger('main', './logs/main.log', 'WARNING')
+logger_main = log.logger('main', 'main.log', 'WARNING')
 
 
 def update_states(timeout=43200):

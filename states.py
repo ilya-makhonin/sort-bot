@@ -6,7 +6,7 @@ from log import logger
 class States:
     def __init__(self, use_cache):
         self.use_cache = use_cache
-        self.logger = logger('state', './logs/state.log', 'INFO')
+        self.logger = logger('state', 'states.log', 'INFO')
         if use_cache:
             self.cache = Cache(use_cache)
         self.logger.info(f"Now param use_cache in Cache class instance is {self.use_cache}")
