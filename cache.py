@@ -2,10 +2,11 @@ from sql import db
 
 
 class Cache:
-    def __init__(self, lazy_loading):
+    def __init__(self, use_cache, lazy_loading=True):
         self.cache_state = dict()
         self.lazy_loading = lazy_loading
-        if len(self.cache_state.values()) == 0:
+        self.use_cache = use_cache
+        if len(self.cache_state.values()) == 0 and use_cache:
             self.get_state_from_db()
 
     def get_state_from_db(self):
@@ -34,7 +35,7 @@ class Cache:
                     cursor.execute('UPDATE users SET state = %s WHERE user_id = %s;', (state, user))
                 connection.commit()
         except Exception as error:
-            db.logger.warning(error)
+            db.logger.warning(error.with_traceback(None), 'Error from cache module - set_state_to_db!')
         finally:
             connection.close()
 
@@ -55,7 +56,7 @@ class Cache:
                     self.cache_state.update({user_id: new_state})
                     return new_state
             except TypeError as type_error:
-                db.logger.warning(type_error)
+                db.logger.warning(type_error.with_traceback(None), 'Error from cache module - get_state!')
                 return False
             finally:
                 connection.close()
@@ -83,10 +84,7 @@ class Cache:
         This function updates the cache.
         :return: nothing
         """
-        self.set_state_to_db()
-        self.clear_cache()
-        self.get_state_from_db()
-
-
-# Initial class instance with disabling lazy loading
-# cache = Cache(lazy_loading=True)
+        if self.use_cache:
+            self.set_state_to_db()
+            self.clear_cache()
+            self.get_state_from_db()
