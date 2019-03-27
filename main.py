@@ -20,7 +20,7 @@ def update_states(timeout=43200):
     try:
         while True:
             sleep(timeout)
-            s.get_cache_instance().update_cache()
+            s.update_cache()
     except Exception as err:
         logger_main.warning(err.with_traceback(None))
         print(err)
@@ -61,7 +61,7 @@ def start_server(use_webhook: bool, logging_enable: bool, **webhook_data):
         logger_main.warning(err.with_traceback(None))
 
 
-def main(use_webhook=False, with_cache=False, logging_enable=True):
+def main(with_cache=False, use_webhook=True, logging_enable=True):
     """
     if with_cache equal True - create and start a new Thread - thread. Then the app will be running
     """

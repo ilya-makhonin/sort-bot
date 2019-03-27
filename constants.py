@@ -11,7 +11,8 @@ helping_text = 'Список админских команд в боте:\n\n/gl
                '\n\n/downloadarticle - добавление своей статьи в БД ' \
                '(*/downloadarticle авторы|темы|название|ссылка* или *other|section|theme|name|link*)\n\n' \
                '/downloadtheme - добавление темы в БД (*/downloadtheme <название темы>*)\n\n/userscount - количество' \
-               'пользователей'
+               'пользователей\n\n/addcourse - добавить новый курс (*/addcourse название|ссылка_на_описание*)\n\n' \
+               '/lastarticle - последняя загруженная статья'
 
 hello_author_mes = 'Хорошо!\n\nВыбирай, чьи статьи ты хочешь читать: Naize, Valter или Fox'
 hello_theme_mes = 'Вот все темы, на которые когда либо были написаны статьи. Выбирай, что душе угодно!'
