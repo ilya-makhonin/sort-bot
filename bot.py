@@ -171,12 +171,30 @@ def download_theme(message: telebot.types.Message):
                 message.from_user.id, 'Тема *{}* успешно добавленна!'.format(theme_name), parse_mode='markdown')
 
 
+@bot.message_handler(commands=['addcourse'])
+def add_course(message: telebot.types.Message):
+    if check_admin(message):
+        text = (message.text[10:]).split('|')
+        result = db.add_course(text[0].strip(), text[1].strip())
+        if result:
+            bot.send_message(message.from_user.id, 'Курс успешно добавлен!')
+            return
+        bot.send_message(message.from_user.id, 'Во время добавления курса возникла ошибка!')
+
+
 @bot.message_handler(commands=['userscount'])
 def count_handler(message: telebot.types.Message):
     if check_admin(message):
         count = db.get_user_count()
         text = 'На данный момент ботом пользуются {} человек'.format(count)
         bot.send_message(message.from_user.id, text)
+
+
+@bot.message_handler(commands=['lastarticle'])
+def get_last_article(message: telebot.types.Message):
+    if check_admin(message):
+        article = db.get_last_article()
+        bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
 # *********************************************************************************************
 
 
@@ -241,7 +259,7 @@ def get_other_choice(message: telebot.types.Message):
 
 
 @bot.message_handler(func=lambda message: s.check_section(message.from_user.id, state['cr']))
-def all_list_articles(message: telebot.types.Message):
+def get_choice_course(message: telebot.types.Message):
     if message.text == 'Далее' or message.text == 'Назад':
         next_back(message, first_level_back)
     else:
