@@ -99,11 +99,32 @@ class SqlMethods:
         finally:
             connection.close()
 
+    def get_last_article(self):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT `name`, `url` FROM articles ORDER BY id DESC LIMIT 1;')
+                return cursor.fetchone() or ['Упс!', 'Такой статьи не существует!']
+        finally:
+            connection.close()
+
+    def add_course(self, name, url):
+        connection = self.get_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('INSERT INTO courses (`name`, `url`) VALUES (%s, %s);', (name, url))
+                return True
+        except Exception as error:
+            self.logger.warning(error.with_traceback(None))
+            return False
+        finally:
+            connection.close()
+
     def get_course(self, name):
         connection = self.get_connection()
         try:
             with connection.cursor() as cursor:
-                cursor.execute('SELECT `name`, `about` FROM courses WHERE `name` = %s;', (name,))
+                cursor.execute('SELECT `name`, `url` FROM courses WHERE `name` = %s;', (name,))
                 return cursor.fetchone() or ['Упс!', 'Такого курса не существует!']
         finally:
             connection.close()
