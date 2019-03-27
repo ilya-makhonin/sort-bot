@@ -4,14 +4,18 @@ from log import logger
 
 
 class States:
-    def __init__(self, use_cache):
+    def __init__(self, use_cache: bool):
+        """
+        :param use_cache: will use cache or not
+        :type <bool>
+        """
         self.use_cache = use_cache
         self.logger = logger('state', 'states.log', 'INFO')
         if use_cache:
             self.cache = Cache(use_cache)
         self.logger.info(f"Now param use_cache in Cache class instance is {self.use_cache}")
 
-    def check_section(self, user_id, state):
+    def check_section(self, user_id: int, state: str):
         """
         :param user_id: user id type <int>
         :param state: checking state type <str>
@@ -24,7 +28,7 @@ class States:
         self.logger.info(f"Used check_section: use_cache - {self.use_cache}, section var - {section}")
         return section.split('-')[0] == state
 
-    def get_full_state(self, user_id):
+    def get_full_state(self, user_id: int):
         """
         :param user_id: user id type <int>
         :return: user state type <list> like [section, start page, finish page, category]
@@ -44,7 +48,7 @@ class States:
                          f"return data - {[state[0], int(pages[0]), int(pages[1]), state[2]]}")
         return [state[0], int(pages[0]), int(pages[1]), state[2]]
 
-    def change_state(self, user_id, section, pages=None, category=None):
+    def change_state(self, user_id: int, section: str, pages=None, category=None):
         """
         :param user_id: user id type <int>
         :param section: section name type <str>
@@ -69,8 +73,13 @@ class States:
                 return
             db.change_state('{}-{}-{}'.format(section, pages, category), user_id)
 
-    def get_cache_instance(self):
-        return self.cache
+    def update_cache(self):
+        """
+        If param use_cache is True then update cache
+        :return: nothing
+        """
+        if self.use_cache:
+            self.cache.update_cache()
 
 
 states = States(False)
