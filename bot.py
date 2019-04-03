@@ -198,7 +198,7 @@ def get_last_article(message: telebot.types.Message):
 # *********************************************************************************************
 
 
-# *********** Back to main menu (Article by author, Artis.cle by theme, All articles) ***********
+# *********** Back to main menu (Article by author, Article by theme, All articles, etc) ***********
 @bot.message_handler(func=lambda message: message.text == first_level_back)
 def back_to_main_menu(message: telebot.types.Message):
     s.change_state(message.from_user.id, state['st'])
