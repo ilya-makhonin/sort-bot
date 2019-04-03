@@ -202,7 +202,7 @@ def get_last_article(message: telebot.types.Message):
 @bot.message_handler(func=lambda message: message.text == first_level_back)
 def back_to_main_menu(message: telebot.types.Message):
     s.change_state(message.from_user.id, state['st'])
-    bot.send_message(message.from_user.id, start_message, parse_mode='markdown', reply_markup=get_markup(main_menu))
+    bot.send_message(message.from_user.id, main_message, parse_mode='markdown', reply_markup=get_markup(main_menu))
 # *********************************************************************************************
 
 
@@ -263,8 +263,8 @@ def get_choice_course(message: telebot.types.Message):
     if message.text == 'Далее' or message.text == 'Назад':
         next_back(message, first_level_back)
     else:
-        article = db.get_course(message.text)
-        bot.send_message(message.from_user.id, '{} - {}'.format(article[0], article[1]))
+        course = db.get_course(message.text)
+        bot.send_message(message.from_user.id, '{} - {}'.format(course[0], course[1]))
 # ********************************************************************************************
 
 
